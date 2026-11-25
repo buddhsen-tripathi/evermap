@@ -298,6 +298,7 @@ Ablations, run when budget allows:
 | **A2-stale**: model from base, never updated | Value of updates |
 | **A1-gen**: static docs generated once by the agent with a generic "document the architecture" prompt | Compares against the cheapest realistic alternative |
 | **A2-noscripts**: skill instructions without scripts | Value of the deterministic tooling |
+| **A2-inline**: the same skill and model, but mapping in the calling conversation instead of headless workers (SPEC §5.12) | Compares model quality (§6.1–6.3) and total tokens (calling conversation + workers) of the two ways of mapping |
 
 ## 6. Metrics
 
@@ -389,6 +390,18 @@ finding goes to the maintainer.
 
   Break-even is reported as the number of downstream tasks after which A2's total cost per
   successful task falls below A0's, if it does.
+- **Headless mapping** (SPEC §5.12; A2 and A2-inline). Targets are provisional except where
+  marked hard:
+  - **calling-conversation tokens per operation:** input tokens added to the calling conversation
+    by `init` and by `update`, excluding the skill's own text (SKILL.md and the references it
+    reads). Target ≤ 3,000 for `init` and ≤ 2,000 for `update` *(prov.)*;
+  - **worker tokens and cost per mapped component:** input, output and cache-read tokens, and
+    cost where the agent reports it *(prov., reported)*;
+  - **estimate error:** actual worker input tokens / `estimated_input_tokens`, per operation
+    *(prov., reported)*;
+  - **no-op update** (S14): calling-conversation tokens *(prov.)*, and worker tokens, which must
+    be 0 because no worker is launched *(hard)*.
+- Like every result, these are published as numbers only (§8.7).
 
 ### 6.8 Safety (all)
 
@@ -436,6 +449,10 @@ results/<run-id>/iteration-<n>/<scenario>/<agent>/<arm>/rep-<k>/
 ├── outputs/  transcript.jsonl  timing.json  grading.json
 results/<run-id>/iteration-<n>/benchmark.json
 ```
+
+`results/` is local and untracked (`.gitignore`). `outputs/` and `transcript.jsonl` never leave the
+benchmark host. Only the numeric fields of `timing.json`, `grading.json` and `benchmark.json` are
+published (§8.7).
 
 ## 8. Experimental controls and validity
 
@@ -507,13 +524,23 @@ results/<run-id>/iteration-<n>/benchmark.json
 
 | Threat | Mitigation |
 | --- | --- |
-| The fixture is small and synthetic, which limits external validity. | Realistic patterns (outbox, idempotency keys, webhooks); held-out second fixture; later, an optional real OSS repository with partial GT. |
+| The fixture is small and synthetic, which limits external validity. | Realistic patterns (outbox, idempotency keys, webhooks); held-out second fixture. Real projects are not used (§8.7), so this limit is accepted and disclosed. |
 | The same team builds the skill and the benchmark. | Ground truth annotated by judges that never see the skill; pre-registration; held-out split; published GT protocol. |
 | Ground-truth judges share model families with the agents under test. | Dual cross-vendor annotation, executable checks, human sample with a published joint judge error rate (§3.2), cross-vendor grading (§8.3). |
 | A1's docs were written from GT and may be unrealistically good. | Intentional: a strong baseline. A1-gen covers the cheap realistic case. |
 | Judge bias, including self-preference | Blind grading, cross-vendor dual grading with per-judge scores, calibration against the maintainer's sample, κ gate, deterministic metrics preferred where possible. |
 | Agent non-determinism | Repetitions, confidence intervals, variance reported. |
 | Contamination by training data | Canary; held-out private split; fixture authored for this benchmark. |
+
+### 8.7 Privacy of results
+
+Decided by the maintainer on 2026-11-25:
+
+- Benchmark runs never use or store any real project's source code. The fixtures are fictional
+  and written for the benchmark, the booking fixture included.
+- Published results hold numbers only: metrics, counts, tokens, durations, cost and versions.
+- Transcripts, agent outputs, diffs and excerpts stay local and untracked (`results/`,
+  `bench/results/`).
 
 ## 9. Reporting
 
@@ -522,7 +549,8 @@ Each milestone evaluation publishes:
 - `benchmark.json`;
 - a Markdown report with per-scenario tables, confidence intervals and cost breakdowns;
 - the list of failed hard thresholds;
-- qualitative failure analysis from transcripts;
+- qualitative failure analysis, done locally from transcripts and published only as failure
+  categories with counts (§8.7);
 - the exact versions of the skill, fixture, GT, harness, agent and model.
 
 Negative and null results are reported with the same prominence as positive ones.

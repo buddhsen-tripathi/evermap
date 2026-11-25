@@ -10,6 +10,11 @@ A0 and A1 baselines, the maintainer reviews them once and freezes them in this f
 (pre-registration) before any milestone's evaluation runs. Thresholds marked *(hard)* never
 change: they are safety or correctness properties.
 
+**Exception to D14 (decided by the maintainer, 2026-11-25).** M2 to M6 deliverables may be
+drafted before M0; the five procedure guides already are. None of their acceptance criteria
+count as met until the milestone's EverBench evaluation runs, the guides stay marked
+unmeasured until then, and no threshold changes because of the drafts.
+
 ---
 
 ## Entry criteria for M0 (the first implementation milestone)
@@ -87,7 +92,7 @@ M0 starts only when all of these hold:
 
 - JSON Schemas (`skills/evermap/assets/schema/`).
 - `scripts/evermap.py` with `init`, `status`, `changes`, `anchor`, `check-evidence`, `fmt`,
-  `validate`, `query`, `search`, `coverage`, `diff`, `render` (minimal technical view).
+  `validate`, `sync`, `query`, `search`, `coverage`, `diff`, `render` (minimal technical view).
 - Unit and golden tests in `tests/`.
 - `SKILL.md` skeleton with router and gotchas, plus the `references/model.md` stub.
 - CI: `skills-ref validate`, unit tests, overfitting guard, `npx skills add . --skill evermap`
@@ -133,6 +138,10 @@ requests), and evaluation of S01, S03 and S18 for A2.
 | M2.10 | Trigger evals: activation on should-trigger; false activation on should-not-trigger | ≥ 0.90; ≤ 0.05 *(prov.)* |
 | M2.11 | Rubric score of rendered technical view, compared with A0 and A1 S01 outputs | ≥ A1 mean *(prov.)* |
 | M2.12 | Token cost of `init` reported, with variance | reported |
+| M2.13 | `init` maps in headless workers (SPEC §5.12): input tokens added to the calling conversation, excluding the skill's own text | ≤ 3,000 *(prov.)* |
+| M2.14 | Worker tokens and cost per mapped component; estimate error (actual / estimated) | reported *(prov.)* |
+| M2.15 | Workers started without an approved estimate; files changed outside `.evermap/` by a worker | 0 *(hard)* |
+| M2.16 | A2-inline ablation (BENCHMARK §5.2): model quality and total tokens, headless against in-conversation | reported *(prov.)* |
 
 ---
 
@@ -167,6 +176,9 @@ change summaries, and evaluation of S04–S08 and S14.
 | M4.7 | Post-update structural F1 within 0.05 of a fresh `init` at the same state | pass *(prov.)* |
 | M4.8 | Stale-detection recall (claims invalidated by patches) | ≥ 0.95 *(prov.)* |
 | M4.9 | Update token cost for S04 compared with a fresh `init` | ≤ 30% *(prov.)* |
+| M4.10 | `update` in headless workers (SPEC §5.12): input tokens added to the calling conversation, excluding the skill's own text | ≤ 2,000 *(prov.)* |
+| M4.11 | S14 no-op update: worker tokens (no worker launched) | 0 *(hard)* |
+| M4.12 | Estimate error for update workers (actual / estimated) | reported *(prov.)* |
 
 ---
 
@@ -262,5 +274,7 @@ flowchart LR
   M3 & M6 & M7 --> M8[M8 Comparative eval + release]
 ```
 
-M0 and M1 can proceed in parallel after the M0 entry criteria are met. M1 does not depend on
-fixture code, only on MODEL.md.
+M1 can start before the M0 entry criteria are met: it depends only on MODEL.md, except M1.7, M1.8
+and the fixture part of M1.11, which need M0's fixture and ground truth and are accepted once those
+exist. M0's annotation step uses M1's `validate` (BENCHMARK §3.2 step 2), so the schemas and
+`validate` land first.

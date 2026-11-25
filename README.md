@@ -10,8 +10,11 @@ evidence source. Technical and plain-English (functional) views are rendered fro
 model. Coding agents and people use the model to understand the system and to assess a change
 before anyone implements it.
 
-> **Status: design phase.** Only the design documents exist so far. Nothing is implemented,
-> and nothing here should be read as a claim about what Evermap can do today.
+> **Status: experimental.** The deterministic toolkit (`skills/evermap/scripts/`, milestone M1)
+> and draft procedure guides (`skills/evermap/references/`) exist and have unit tests. The guides
+> are unmeasured: the EverBench benchmark that is meant to measure them is designed but not
+> built. Not available yet: full regeneration with id reconciliation (`reconcile`,
+> `regenerate`) and schema migration (`migrate`). Nothing here is a claim about accuracy.
 
 ## Design documents
 
@@ -27,8 +30,11 @@ before anyone implements it.
 
 [Apache License 2.0](LICENSE).
 
-## Planned installation (not yet available)
+## Installation (experimental)
 
 ```bash
 npx skills add buddhsen-tripathi/evermap --skill evermap
 ```
+
+Mapping runs in headless workers after the user approves a token estimate; see
+`skills/evermap/references/headless.md`.

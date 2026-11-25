@@ -46,6 +46,8 @@ use a *different* domain, so the skill is not tuned to the benchmark (BENCHMARK 
 │   └── roles/<slug>.json
 ├── decisions/<slug>.json        # decision records (kept apart: historical, never regenerated)
 ├── proposals/<slug>/            # optional overlays for proposed changes (§7)
+├── draft.json                   # transient: elements a worker wrote for `apply` (SPEC §6.3); never an element
+├── plan.json                    # transient: worker packets from `estimate --write-plan`; deleted by `sync`
 └── views/                       # GENERATED from the model; never edited by hand
     ├── README.md                # index and system overview
     ├── technical/…              # per-component pages and Mermaid diagrams
@@ -82,8 +84,10 @@ segment := [a-z0-9]+ ("-" [a-z0-9]+)*
 Examples: `component:booking-service`, `operation:booking.cancel`, `entity:booking`,
 `rule:cancellation.full-refund-window`, `decision:use-transactional-outbox`.
 
-- **File path** = `.evermap/model/<kind>s/<slug>.json`. The validator enforces this. Slugs
-  contain no `/` or `:`, so paths are safe on every OS.
+- **File path** = `.evermap/model/<kind-dir>/<slug>.json`, where `<kind-dir>` is the directory
+  named in §2 (the plural of the kind, so `entities` for `entity`). Decisions are the exception:
+  `.evermap/decisions/<slug>.json`. The validator enforces this. Slugs contain no `/` or `:`, so
+  paths are safe on every OS.
 - **Sub-element references** use `#`. `entity:booking#status` is a field. `workflow:cancel-booking#s3`
   is a workflow step. `operation:booking.cancel#tx1` is a transaction boundary.
 - **Assignment:** chosen once, when the element is created, from the concept's domain name, not
@@ -108,6 +112,9 @@ Examples: `component:booking-service`, `operation:booking.cancel`, `entity:booki
 | | `stated` | Asserted by a human: a confirmed decision, a declared invariant, or a user statement during mapping. Requires `stated`-type evidence (§5). |
 | | `unknown` | Expected but not determinable from the available evidence. The element exists to record the gap, for example "authorization for this route could not be determined". |
 | `rationale` | string | Why an `inferred` claim was made. Required when `provenance = inferred`. |
+
+`decision` records do not use these two fields. They carry `status` and per-section provenance
+instead (§6.9).
 
 **Inheritance:** a relation or attribute without its own `provenance` inherits the element's.
 An `observed` element may contain `inferred` attributes. For example, an endpoint can be
@@ -150,8 +157,18 @@ instead.
 - `fresh`: the hash at the recorded lines matches.
 - `moved`: the identical span was found elsewhere in the file, or in the file's rename target.
   The script rewrites `lines` and `path` automatically. This is a mechanical change.
-- `stale`: no identical span exists. The claim needs re-verification by the agent.
-- `missing`: the file or symbol is gone.
+- `stale`: no identical span exists, or several do (see below). The claim needs re-verification
+  by the agent.
+- `missing`: the file is gone, or `symbol` no longer appears anywhere in the file.
+
+**Ambiguous moves:** when the identical span occurs more than once, the item is `stale` with the
+reason "the span occurs more than once", even when `symbol` is recorded. Identical copies contain
+the same symbol, so it cannot tell them apart, and guessing from nearby lines could re-anchor the
+claim to the wrong code without anyone noticing. `stale` is the safe over-approximation.
+
+**Anchoring never hides staleness:** `anchor` only fills hashes that are absent. Replacing an
+existing hash needs `--refresh` with the element named explicitly, after the agent has re-read the
+span.
 
 ## 6. Element kinds
 
@@ -164,7 +181,7 @@ All kinds share this envelope:
 | `summary` | yes | One or two technical sentences. |
 | `plain` | yes for components, operations, workflows, rules, invariants and roles | Plain-English statement for non-technical readers. It may only restate what the technical fields and evidence support. |
 | `parent` | per kind | Containment reference, for example the component that owns an operation. |
-| `lifecycle`, `provenance`, `rationale` | yes, yes, conditional | §4. |
+| `lifecycle`, `provenance`, `rationale` | yes, yes, conditional | §4. Not used on `decision` (§6.9). |
 | `evidence` | conditional | §5. Required when `provenance = observed`. |
 | `relations` | optional | Outgoing typed edges (§6.10). |
 | `aliases` | optional | Previous IDs of this concept. |
@@ -350,7 +367,8 @@ shared with the technical view.
     {"id": "o-denied", "type": "failure", "plain": "Cancellation refused because the person lacks permission."}
   ],
   "lifecycle": "implemented",
-  "provenance": "observed"
+  "provenance": "observed",
+  "evidence": [{"type": "code", "path": "services/booking/src/cancel.ts", "symbol": "cancelBooking", "lines": [42, 88], "hash": "sha256:…"}]
 }
 ```
 
@@ -403,7 +421,7 @@ MADR-compatible, with per-section provenance.
 | `consequences` | `[{"text", "type": "positive"\|"negative"\|"neutral", "provenance"}]`: trade-offs. |
 | `affects` | Element IDs. |
 | `supersedes`, `superseded_by` | Decision IDs. |
-| `evidence` | Must include ≥ 1 `stated` item if any section is `confirmed`. |
+| `evidence` | Must include ≥ 1 `stated` item if any section is `confirmed`. For a decision imported from an accepted ADR in the repository, the ADR's `doc` evidence item counts instead (SPEC §5.5). |
 
 Section provenance values: `confirmed` (a human confirmed this text), `inferred` (the agent
 derived it from code or history; **shown as "Inferred — not confirmed"** in every render), and
@@ -411,7 +429,7 @@ derived it from code or history; **shown as "Inferred — not confirmed"** in ev
 
 Hard rules:
 
-- `status: accepted` or `rejected` requires `decision.provenance = confirmed`.
+- Any `status` other than `proposed` requires `decision.provenance = confirmed`.
 - The agent may create `proposed` records holding inferred text as *candidates*. It may never
   upgrade provenance to `confirmed` without an explicit human confirmation captured as `stated`
   evidence.
@@ -427,9 +445,11 @@ Relations are stored on the **source** element only. The scripts compute reverse
 | `reads`, `writes`, `deletes` | operation → entity | `fields`, `condition`, `in_transaction` |
 | `publishes`, `consumes` | operation → channel | `message`, `condition` |
 | `applies` | operation → rule | |
-| `enforces` | operation → invariant | Complements `invariant.enforcement`. The validator checks both directions agree. |
-| `affects` | decision → any | Mirrors `decision.affects`. |
 | `uses_role` | role → role | Role hierarchy (e.g. admin includes staff). |
+
+`enforces` (operation → invariant) and `affects` (decision → any) are **derived** edges. They are
+computed from `invariant.enforcement[].where` and `decision.affects` and are never stored, so there
+is one source for each fact.
 
 Every relation may carry `provenance`, `rationale` and `evidence`. Observed relations whose
 target's evidence does not already prove the link must carry their own evidence, for example the
@@ -485,6 +505,11 @@ proposals/allow-partial-refunds/
 
 - `synced.commit` is the commit whose code the model describes. `mode` is `init`, `update` or
   `regenerate`.
+- `synced.dirty` is `true` when the model describes a working tree with uncommitted changes outside
+  `.evermap/` (SPEC §5.3 U6). It is omitted otherwise.
+- `coverage.pending` lists component IDs that are declared but not yet mapped (a mapping run
+  stopped before its last packet resumes from `.evermap/plan.json` instead, SPEC §5.12), so discovery can
+  continue in a later session (SPEC §5.1).
 - `coverage` makes gaps explicit. Impact reports must cite it when an affected area is unmapped,
   so that "not found" is never read as "does not exist".
 - There is no timestamp, so an update with no changes is byte-identical (EverBench S14).
@@ -496,8 +521,8 @@ proposals/allow-partial-refunds/
 | V1 | Every file parses as JSON and matches the kind's schema. | error |
 | V2 | `id` matches the grammar (§3), the `kind` prefix and the file path. IDs are unique, and aliases do not collide with live IDs. | error |
 | V3 | Every reference (`parent`, `relations[].target`, `maps_to`, `origins[].from`, `rules`, `operation`, `roles`, …) resolves to a live ID or sub-element. | error |
-| V4 | `provenance = observed` ⇒ ≥ 1 evidence item. `inferred` ⇒ non-empty `rationale`. `stated` ⇒ ≥ 1 `stated` evidence item. | error |
-| V5 | No element in `model/` has `lifecycle = proposed`. | error |
+| V4 | `provenance = observed` ⇒ ≥ 1 evidence item that is not `stated`. `inferred` ⇒ non-empty `rationale`. `stated` ⇒ ≥ 1 `stated` evidence item. A `none-detected` mechanism carries its own evidence or rationale. | error |
+| V5 | No element in `model/` has `lifecycle = proposed`. Every element in a proposal overlay does. | error |
 | V6 | File evidence paths exist at the working tree. Lines are in range. Hashes are present. | error |
 | V7 | Evidence freshness: `stale` or `missing` items are listed. | error in `--strict` (CI), warning otherwise |
 | V8 | Workflow steps reference an operation or rule, or carry evidence. `next`, branch and outcome IDs resolve inside the workflow. | error |
@@ -515,5 +540,6 @@ The validator prints a JSON report to stdout and exits non-zero on any error.
 
 - `schema_version` uses `MAJOR.MINOR`. A minor bump only adds optional fields. A major bump needs
   `scripts/evermap.py migrate`, which rewrites files deterministically.
-- JSON Schemas ship in `skills/evermap/assets/schema/` (one per kind plus a manifest schema) and
-  are the normative definition. This document explains them.
+- JSON Schemas ship in `skills/evermap/assets/schema/` (one per kind, a manifest schema, and a
+  `common` schema for shared definitions) and are the normative definition. The property order in
+  each schema is the canonical key order (§2.1). This document explains them.
