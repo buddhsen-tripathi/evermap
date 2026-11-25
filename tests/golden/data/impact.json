@@ -1,0 +1,209 @@
+{
+  "ids": [
+    "operation:parcel.deposit"
+  ],
+  "depth": 2,
+  "seeds": [
+    {
+      "id": "operation:parcel.deposit",
+      "name": "Deposit parcel"
+    }
+  ],
+  "direct": [
+    {
+      "id": "channel:parcel-outbox",
+      "name": "Parcel outbox",
+      "distance": 1,
+      "because": [
+        {
+          "of": "operation:parcel.deposit",
+          "reason": "publishes"
+        }
+      ]
+    },
+    {
+      "id": "component:locker-api",
+      "name": "Locker API",
+      "distance": 1,
+      "because": [
+        {
+          "of": "operation:parcel.deposit",
+          "reason": "contains"
+        }
+      ]
+    },
+    {
+      "id": "entity:locker",
+      "name": "Locker",
+      "distance": 1,
+      "because": [
+        {
+          "of": "operation:parcel.deposit",
+          "reason": "writes"
+        }
+      ]
+    },
+    {
+      "id": "entity:parcel",
+      "name": "Parcel",
+      "distance": 1,
+      "because": [
+        {
+          "of": "operation:parcel.deposit",
+          "reason": "lineage"
+        },
+        {
+          "of": "operation:parcel.deposit",
+          "reason": "writes"
+        }
+      ]
+    },
+    {
+      "id": "entity:parcel-stored",
+      "name": "Parcel stored event",
+      "distance": 1,
+      "because": [
+        {
+          "of": "operation:parcel.deposit",
+          "reason": "lineage"
+        }
+      ]
+    }
+  ],
+  "indirect": [
+    {
+      "id": "component:locker-db",
+      "name": "Locker database",
+      "distance": 2,
+      "because": [
+        {
+          "of": "entity:locker",
+          "reason": "contains"
+        },
+        {
+          "of": "entity:parcel",
+          "reason": "contains"
+        }
+      ]
+    },
+    {
+      "id": "operation:parcel.collect",
+      "name": "Collect parcel",
+      "distance": 2,
+      "because": [
+        {
+          "of": "entity:locker",
+          "reason": "writes (writer)"
+        },
+        {
+          "of": "entity:parcel",
+          "reason": "reads"
+        },
+        {
+          "of": "entity:parcel",
+          "reason": "writes (writer)"
+        }
+      ]
+    },
+    {
+      "id": "operation:recipient.notify",
+      "name": "Notify recipient",
+      "distance": 2,
+      "because": [
+        {
+          "of": "channel:parcel-outbox",
+          "reason": "consumes"
+        },
+        {
+          "of": "channel:parcel-outbox",
+          "reason": "triggered_by"
+        },
+        {
+          "of": "entity:parcel",
+          "reason": "reads"
+        }
+      ]
+    }
+  ],
+  "shared_resources": [
+    {
+      "resource": "entity:locker",
+      "writers": [
+        "operation:parcel.collect",
+        "operation:parcel.deposit"
+      ],
+      "readers": []
+    },
+    {
+      "resource": "entity:locker#free",
+      "writers": [
+        "operation:parcel.collect",
+        "operation:parcel.deposit"
+      ],
+      "readers": []
+    },
+    {
+      "resource": "entity:parcel",
+      "writers": [
+        "operation:parcel.collect",
+        "operation:parcel.deposit"
+      ],
+      "readers": [
+        "operation:recipient.notify"
+      ]
+    },
+    {
+      "resource": "entity:parcel#status",
+      "writers": [
+        "operation:parcel.collect",
+        "operation:parcel.deposit"
+      ],
+      "readers": []
+    }
+  ],
+  "channels": [
+    {
+      "id": "channel:parcel-outbox",
+      "name": "Parcel outbox",
+      "producers": [
+        "operation:parcel.deposit"
+      ],
+      "consumers": [
+        "operation:recipient.notify"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "id": "workflow:deposit-parcel",
+      "name": "Deposit a parcel"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "invariant:one-parcel-per-locker",
+      "name": "One parcel per locker"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "decision:skip-locked-assignment",
+      "name": "Assign lockers with SKIP LOCKED"
+    }
+  ],
+  "tests": [
+    {
+      "test": "tests/test_deposit.py:1-2",
+      "elements": [
+        "invariant:one-parcel-per-locker"
+      ]
+    }
+  ],
+  "lineage_downstream": [],
+  "coverage_gaps": {
+    "unmapped": [],
+    "pending": [],
+    "unknown": []
+  },
+  "statement": "This lists what the model records. Not found does not mean not affected."
+}
