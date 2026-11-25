@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: unit (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -B -m unittest discover -s tests -t .
+
+  json-schema-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: json-schema-org/JSON-Schema-Test-Suite
+          ref: e2a68a15cd490750fd6b95e604e4054d7d978d1f
+          path: JSON-Schema-Test-Suite
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - run: python -B -m unittest tests.unit.test_jsonschema -v
+        env:
+          JSON_SCHEMA_TEST_SUITE: ${{ github.workspace }}/JSON-Schema-Test-Suite
+
+  skill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v6
+      - name: skills-ref validate
+        run: uvx --from "git+https://github.com/agentskills/agentskills@83021e2be457a9b6679148719c1f6074f0ad975e#subdirectory=skills-ref" skills-ref validate skills/evermap
+      - name: Overfitting guard
+        run: python -B tests/overfitting_guard.py skills/evermap
+      - name: No SKILL.md outside skills/
+        run: |
+          outside=$(git ls-files -- '*SKILL.md' | grep -v '^skills/' || true)
+          if [ -n "$outside" ]; then echo "SKILL.md outside skills/: $outside"; exit 1; fi
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: npx skills add in a temporary project
+        env:
+          DISABLE_TELEMETRY: "1"
+        run: |
+          project=$(mktemp -d)
+          cd "$project"
+          git init -q
+          npx --yes skills add --yes "$GITHUB_WORKSPACE" --skill evermap
+          installed=$(find . -path '*evermap/SKILL.md' -not -path './node_modules/*' | head -n 1)
+          if [ -z "$installed" ]; then echo "evermap was not installed"; exit 1; fi
+          echo "installed at $installed"
