@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "workflow.schema.json",
+  "title": "End-to-end business process",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "workflow"
+      ]
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "plain": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "parent": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "trigger_plain": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "data_collected": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/ref"
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "plain": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "operation": {
+            "$ref": "common.schema.json#/$defs/id"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/id"
+            }
+          },
+          "next": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          "outcome": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "condition_plain": {
+                  "type": "string",
+                  "pattern": "\\S"
+                },
+                "next": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                "outcome": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                "provenance": {
+                  "$ref": "common.schema.json#/$defs/provenance"
+                },
+                "rationale": {
+                  "$ref": "common.schema.json#/$defs/text"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "common.schema.json#/$defs/evidence"
+                  }
+                }
+              },
+              "required": [
+                "condition_plain"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "on_failure": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "plain": {
+                  "type": "string",
+                  "pattern": "\\S"
+                },
+                "next": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                "outcome": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$"
+                },
+                "provenance": {
+                  "$ref": "common.schema.json#/$defs/provenance"
+                },
+                "rationale": {
+                  "$ref": "common.schema.json#/$defs/text"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "common.schema.json#/$defs/evidence"
+                  }
+                }
+              },
+              "required": [
+                "plain"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "plain"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "outcomes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "success",
+              "alternative",
+              "failure"
+            ]
+          },
+          "plain": {
+            "type": "string",
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "plain"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lifecycle": {
+      "$ref": "common.schema.json#/$defs/lifecycle"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "rationale": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relation"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "lifecycle",
+    "provenance",
+    "steps",
+    "outcomes"
+  ],
+  "additionalProperties": false
+}

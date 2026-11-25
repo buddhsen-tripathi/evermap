@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rule.schema.json",
+  "title": "Business rule",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "rule"
+      ]
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "plain": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "parent": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "validation",
+        "eligibility",
+        "calculation",
+        "policy",
+        "state-transition"
+      ]
+    },
+    "statement": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "value": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          },
+          "source": {
+            "$ref": "common.schema.json#/$defs/evidence"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lifecycle": {
+      "$ref": "common.schema.json#/$defs/lifecycle"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "rationale": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relation"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "lifecycle",
+    "provenance",
+    "type",
+    "statement"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "entity.schema.json",
+  "title": "Data structure: persisted or exchanged",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "entity"
+      ]
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "plain": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "parent": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "table",
+        "collection",
+        "document",
+        "cache-key",
+        "file",
+        "message",
+        "dto"
+      ]
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/field"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "primary-key",
+              "unique",
+              "foreign-key",
+              "check",
+              "exclusion",
+              "not-null"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "\\S"
+            }
+          },
+          "detail": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lifecycle": {
+      "$ref": "common.schema.json#/$defs/lifecycle"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "rationale": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relation"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "lifecycle",
+    "provenance",
+    "type"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "field": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "type": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "plain": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "sensitivity": {
+          "type": "string",
+          "enum": [
+            "none",
+            "pii",
+            "financial",
+            "credential-reference"
+          ]
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/origin"
+          }
+        },
+        "states": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "values": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "\\S"
+              }
+            },
+            "transitions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  },
+                  "to": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  },
+                  "via": {
+                    "$ref": "common.schema.json#/$defs/id"
+                  },
+                  "guard": {
+                    "$ref": "common.schema.json#/$defs/id"
+                  },
+                  "provenance": {
+                    "$ref": "common.schema.json#/$defs/provenance"
+                  },
+                  "rationale": {
+                    "$ref": "common.schema.json#/$defs/text"
+                  },
+                  "evidence": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "common.schema.json#/$defs/evidence"
+                    }
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "values"
+          ],
+          "additionalProperties": false
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/provenance"
+        },
+        "rationale": {
+          "$ref": "common.schema.json#/$defs/text"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/evidence"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "origin": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "user-input",
+            "derived",
+            "system-generated",
+            "external",
+            "copied",
+            "constant"
+          ]
+        },
+        "from": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/ref"
+          }
+        },
+        "via": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "transform": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/provenance"
+        },
+        "rationale": {
+          "$ref": "common.schema.json#/$defs/text"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/evidence"
+          }
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

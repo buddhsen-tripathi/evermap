@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "invariant.schema.json",
+  "title": "Property that must always hold",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "invariant"
+      ]
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "plain": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "parent": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "statement": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "uniqueness",
+        "referential",
+        "consistency",
+        "authorization",
+        "idempotency",
+        "ordering",
+        "temporal",
+        "conservation"
+      ]
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/ref"
+      }
+    },
+    "enforcement": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mechanism": {
+            "type": "string",
+            "enum": [
+              "db-constraint",
+              "transaction",
+              "lock",
+              "conditional-update",
+              "application-check",
+              "idempotency-key",
+              "test-only",
+              "none-detected"
+            ]
+          },
+          "where": {
+            "$ref": "common.schema.json#/$defs/ref"
+          },
+          "note": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "mechanism"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "verified_by": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "criticality": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "lifecycle": {
+      "$ref": "common.schema.json#/$defs/lifecycle"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "rationale": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relation"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "lifecycle",
+    "provenance",
+    "statement",
+    "category",
+    "enforcement"
+  ],
+  "additionalProperties": false
+}

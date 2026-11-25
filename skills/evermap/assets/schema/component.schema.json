@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "component.schema.json",
+  "title": "Deployable or logical unit of code, or an external system",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "component"
+      ]
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "plain": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "parent": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "service",
+        "worker",
+        "frontend",
+        "module",
+        "library",
+        "datastore",
+        "external-system"
+      ]
+    },
+    "technology": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "paths": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/glob"
+      }
+    },
+    "responsibilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
+    },
+    "config": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_.-]*$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "env",
+              "file",
+              "flag",
+              "secret",
+              "other"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lifecycle": {
+      "$ref": "common.schema.json#/$defs/lifecycle"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "rationale": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relation"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "lifecycle",
+    "provenance",
+    "type"
+  ],
+  "additionalProperties": false
+}

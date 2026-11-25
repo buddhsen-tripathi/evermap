@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "operation.schema.json",
+  "title": "Unit of behaviour with a contract",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "operation"
+      ]
+    },
+    "name": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "plain": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "parent": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "trigger": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "http",
+            "rpc",
+            "message",
+            "schedule",
+            "webhook",
+            "cli",
+            "call",
+            "startup"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "channel": {
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/provenance"
+        },
+        "rationale": {
+          "$ref": "common.schema.json#/$defs/text"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/evidence"
+          }
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "exposure": {
+      "type": "string",
+      "enum": [
+        "public",
+        "internal",
+        "unreachable"
+      ]
+    },
+    "contract": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/param"
+          }
+        },
+        "output": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/param"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/error"
+          }
+        },
+        "spec": {
+          "$ref": "common.schema.json#/$defs/evidence"
+        }
+      },
+      "additionalProperties": false
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "authentication": {
+          "type": "string",
+          "enum": [
+            "required",
+            "optional",
+            "none",
+            "unknown"
+          ]
+        },
+        "mechanism": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "authorization": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "$ref": "common.schema.json#/$defs/id"
+                }
+              },
+              "ownership_check": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "provenance": {
+                "$ref": "common.schema.json#/$defs/provenance"
+              },
+              "rationale": {
+                "$ref": "common.schema.json#/$defs/text"
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "common.schema.json#/$defs/evidence"
+                }
+              }
+            },
+            "required": [
+              "rule"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/provenance"
+        },
+        "rationale": {
+          "$ref": "common.schema.json#/$defs/text"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/evidence"
+          }
+        }
+      },
+      "required": [
+        "authentication"
+      ],
+      "additionalProperties": false
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "mechanism": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "isolation": {
+            "type": "string",
+            "enum": [
+              "default",
+              "read-committed",
+              "repeatable-read",
+              "serializable",
+              "unknown"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "mechanism"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "concurrency": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "$ref": "common.schema.json#/$defs/ref"
+          },
+          "mechanism": {
+            "type": "string",
+            "enum": [
+              "row-lock",
+              "optimistic-version",
+              "unique-constraint",
+              "atomic-update",
+              "conditional-update",
+              "advisory-lock",
+              "single-consumer",
+              "none-detected"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "resource",
+          "mechanism"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "idempotency": {
+      "type": "object",
+      "properties": {
+        "mechanism": {
+          "type": "string",
+          "enum": [
+            "idempotency-key",
+            "natural-key",
+            "dedupe-record",
+            "conditional-update",
+            "none-detected",
+            "not-applicable"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "note": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/provenance"
+        },
+        "rationale": {
+          "$ref": "common.schema.json#/$defs/text"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "common.schema.json#/$defs/evidence"
+          }
+        }
+      },
+      "required": [
+        "mechanism"
+      ],
+      "additionalProperties": false
+    },
+    "failure_handling": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "on": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "behaviour": {
+            "type": "string",
+            "enum": [
+              "retry",
+              "compensate",
+              "propagate",
+              "swallow",
+              "dead-letter",
+              "mark-failed"
+            ]
+          },
+          "plain": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/provenance"
+          },
+          "rationale": {
+            "$ref": "common.schema.json#/$defs/text"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/evidence"
+            }
+          }
+        },
+        "required": [
+          "on",
+          "behaviour"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "lifecycle": {
+      "$ref": "common.schema.json#/$defs/lifecycle"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    },
+    "rationale": {
+      "$ref": "common.schema.json#/$defs/text"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/relation"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "name",
+    "summary",
+    "lifecycle",
+    "provenance",
+    "parent",
+    "trigger",
+    "exposure"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "decision.schema.json",
+  "title": "Architecture decision record",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "decision"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "accepted",
+        "rejected",
+        "deprecated",
+        "superseded"
+      ]
+    },
+    "date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "problem": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/sectionProvenance"
+        }
+      },
+      "required": [
+        "text",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/sectionProvenance"
+          }
+        },
+        "required": [
+          "text",
+          "provenance"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "chosen",
+              "rejected",
+              "not-chosen"
+            ]
+          },
+          "pros": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "\\S"
+            }
+          },
+          "cons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "\\S"
+            }
+          },
+          "reasons_rejected": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "pattern": "\\S"
+              },
+              "provenance": {
+                "$ref": "common.schema.json#/$defs/sectionProvenance"
+              }
+            },
+            "required": [
+              "text",
+              "provenance"
+            ],
+            "additionalProperties": false
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/sectionProvenance"
+          }
+        },
+        "required": [
+          "name",
+          "outcome"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "provenance": {
+          "$ref": "common.schema.json#/$defs/sectionProvenance"
+        }
+      },
+      "required": [
+        "text",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "consequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "positive",
+              "negative",
+              "neutral"
+            ]
+          },
+          "provenance": {
+            "$ref": "common.schema.json#/$defs/sectionProvenance"
+          }
+        },
+        "required": [
+          "text",
+          "type",
+          "provenance"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "affects": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/ref"
+      }
+    },
+    "supersedes": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "superseded_by": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/evidence"
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/id"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/tag"
+      }
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "title",
+    "status",
+    "problem",
+    "decision"
+  ],
+  "additionalProperties": false
+}
