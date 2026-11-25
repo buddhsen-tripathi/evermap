@@ -138,7 +138,10 @@ class Estimate(S.RepoCase):
 
     def test_crlf_counts_like_lf(self):
         before = self.estimate()
-        S.put(self.root, "api/collect.py", S.read(self.root, "api/collect.py").replace("\n", "\r\n"))
+        lines = S.read(self.root, "api/collect.py").replace("\r\n", "\n")  # a Windows checkout has CRLF already
+        S.put(self.root, "api/collect.py", lines.replace("\n", "\r\n"))
+        self.assertEqual(self.estimate(), before)
+        S.put(self.root, "api/collect.py", lines)
         self.assertEqual(self.estimate(), before)
 
     def test_changed_only(self):
