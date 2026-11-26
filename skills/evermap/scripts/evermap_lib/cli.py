@@ -824,7 +824,7 @@ def build_parser():
     sub.add_argument("--dry-run", action="store_true", help="report without writing")
     sub = add("fmt", cmd_fmt, "Format model files canonically.")
     sub.add_argument("--check", action="store_true", help="report without writing; exit 1 when not formatted")
-    sub = add("validate", cmd_validate, "Check validation rules V1 to V15.")
+    sub = add("validate", cmd_validate, "Check validation rules V1 to V16.")
     sub.add_argument("--strict", action="store_true", help="treat stale evidence and formatting as errors")
     sub = add("sync", cmd_sync, "Record HEAD as the commit the model describes.")
     sub.add_argument("--mode", choices=("init", "update", "regenerate"), required=True)

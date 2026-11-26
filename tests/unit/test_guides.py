@@ -34,6 +34,10 @@ def prose(markdown):
     return re.sub(r"^```[^\n]*\n.*?^```", "", markdown, flags=re.M | re.S)
 
 
+def split_model_section(heading):
+    return text("model.md").split("\n## " + heading + "\n", 1)[1].split("\n## ", 1)[0]
+
+
 def inline(markdown):
     return re.findall(r"`([^`\n]+)`", prose(markdown))
 
@@ -275,6 +279,17 @@ class Guides(unittest.TestCase):
         assess = text("assess.md")
         self.assertIn("at most 3,500 characters, most severe finding first", assess)
         self.assertIn("[:4000]", assess)
+
+    def test_relation_direction_guidance(self):
+        relations = split_model_section("Relations")
+        for phrase in ("`depends_on` points from the consumer to the provider",
+                       "`calls` points from the caller to the callee", "never a signature or a comment",
+                       "calls the server's handler, never the reverse", "Data received as an argument is\nnot a call"):
+            self.assertIn(phrase, relations)
+        wrong, right = [json.loads(b) for i, b in fenced(relations) if i == "json"]
+        self.assertEqual((wrong["type"], right["type"]), ("calls", "calls"))
+        self.assertEqual(right["target"], "operation:parcel.deposit")
+        self.assertIn("Direction (", text("discover.md"))
 
     def test_regenerate_is_said_to_be_unavailable(self):
         self.assertIn("Regenerate is not available", text("update.md"))

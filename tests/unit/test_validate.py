@@ -1,4 +1,4 @@
-"""Positive and negative tests for V1 to V15, plus the mutation suite (ROADMAP M1.4)."""
+"""Positive and negative tests for V1 to V16, plus the mutation suite (ROADMAP M1.4)."""
 
 import json
 import os
@@ -10,6 +10,7 @@ from evermap_lib import model as M
 DEPOSIT, COLLECT, NOTIFY = "operation:parcel.deposit", "operation:parcel.collect", "operation:recipient.notify"
 PARCEL, RULE, INV = "entity:parcel", "rule:collection.window", "invariant:one-parcel-per-locker"
 FLOW, DECISION, API = "workflow:deposit-parcel", "decision:skip-locked-assignment", "component:locker-api"
+NOTIFIER = "component:notifier"
 
 
 def setter(ident, change):
@@ -221,7 +222,77 @@ WARNINGS = [
     ("view edited by hand", "V15", sub(".evermap/views/README.md", "# Parcel", "# My parcel"), False),
     ("model changed after render", "V15", setter(RULE, put(summary="Changed.")), False),
     ("views deleted", "V15", lambda c: S.shutil.rmtree(os.path.join(c.root, ".evermap", "views")), False),
+    ("call against a dependency", "V16", lambda c: [depend(c, API, NOTIFIER), call(c, NOTIFY, DEPOSIT, "sync-call")], False),
+    ("call without a mechanism against a dependency", "V16",
+     lambda c: [depend(c, API, NOTIFIER), call(c, NOTIFY, DEPOSIT, None)], False),
+    ("in-process call across technologies", "V16", lambda c: [
+        c.edit(NOTIFIER, put(technology="go")), call(c, NOTIFY, DEPOSIT, "in-process")], False),
+    ("mutual dependency", "V16", lambda c: [depend(c, API, NOTIFIER), depend(c, NOTIFIER, API)], False),
 ]
+
+
+def depend(case, source, target):
+    case.edit(source, lambda v: v.setdefault("relations", []).append({"type": "depends_on", "target": target}))
+
+
+def call(case, source, target, mechanism):
+    relation = {"type": "calls", "target": target}
+    if mechanism:
+        relation["mechanism"] = mechanism
+    case.edit(source, lambda v: v.setdefault("relations", []).append(relation))
+
+
+class RelationDirection(S.RepoCase):
+    """V16: warnings only, naming both ids; the right direction stays clean."""
+
+    def v16(self):
+        code, findings = self.findings("--strict")
+        return code, [f for f in findings if f["rule"] == "V16"]
+
+    def test_right_direction_is_clean(self):
+        depend(self, NOTIFIER, API)
+        call(self, NOTIFY, DEPOSIT, "sync-call")
+        self.assertEqual(self.v16()[1], [])
+
+    def test_other_mechanisms_and_same_technology_are_clean(self):
+        depend(self, API, NOTIFIER)
+        call(self, NOTIFY, DEPOSIT, "sync-http")  # a webhook back to the caller is legitimate
+        call(self, NOTIFY, COLLECT, "async-message")
+        self.edit(NOTIFIER, put(technology="Python"))
+        call(self, NOTIFY, DEPOSIT, "in-process")
+        self.assertEqual([f["message"].split(" ")[1] for f in self.v16()[1]], ["calls"])  # only the reversed one
+
+    def test_technology_compares_only_the_first_word(self):
+        self.edit(API, put(technology="swift"))
+        self.edit(NOTIFIER, put(technology="Swift package (macOS 15)"))
+        call(self, NOTIFY, DEPOSIT, "in-process")
+        self.assertEqual(self.v16()[1], [])
+        from evermap_lib import rules
+        self.assertEqual([rules._technology(t) for t in ("C++ (17)", "C#", "F#,", "Python 3.9", "", None)],
+                         ["c++", "c#", "f#", "python", "", ""])
+
+    def test_calls_inside_one_component_are_clean(self):
+        self.edit(API, put(technology="python"))
+        call(self, COLLECT, DEPOSIT, "in-process")
+        self.assertEqual(self.v16()[1], [])
+
+    def test_messages_name_both_ids_and_never_fail(self):
+        depend(self, API, NOTIFIER)
+        depend(self, NOTIFIER, API)
+        self.edit(NOTIFIER, put(technology="go"))
+        call(self, NOTIFY, DEPOSIT, None)
+        code, hits = self.v16()
+        self.assertEqual(len(hits), 3, hits)
+        self.assertEqual({f["severity"] for f in hits}, {"warning"})
+        mutual = next(f for f in hits if "each other" in f["message"])
+        self.assertIn(API, mutual["message"])
+        self.assertIn(NOTIFIER, mutual["message"])
+        for hit in (f for f in hits if f is not mutual):
+            self.assertEqual(hit["id"], NOTIFY)
+            self.assertRegex(hit["at"], r"^\$\.relations\[\d\]$")
+            self.assertIn(DEPOSIT, hit["message"])
+            self.assertIn("check", hit["message"])
+        self.assertFalse([f for f in self.findings("--strict")[1] if f["severity"] == "error" and f["rule"] != "V15"])
 
 
 class Positive(S.RepoCase):
@@ -273,7 +344,7 @@ class Mutations(S.RepoCase):
     def test_suite_is_large_enough_and_covers_every_rule(self):
         self.assertGreaterEqual(len(MUTATIONS), 50)
         covered = {m[1] for m in MUTATIONS} | {w[1] for w in WARNINGS}
-        self.assertEqual(covered, {"V%d" % n for n in range(1, 16)})
+        self.assertEqual(covered, {"V%d" % n for n in range(1, 17)})
 
     def test_findings_never_print_the_secret(self):
         self.edit(RULE, put(summary="Uses " + FAKE_AWS))

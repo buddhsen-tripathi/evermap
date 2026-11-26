@@ -68,7 +68,7 @@ them. After any other change to element files, repeat until `validate` reports n
 
 1. `anchor`: fills absent evidence hashes and checks line ranges.
 2. `fmt`: canonical key order, sorting and whitespace.
-3. `validate`: rules V1 to V15. Fix each finding in the element it names.
+3. `validate`: rules V1 to V16. Fix each finding in the element it names.
 
 Then `sync --mode <init|update|regenerate>` to record the commit the model describes, and only
 after that `render`: the views show the synced commit, so rendering first leaves them out of
@@ -87,6 +87,8 @@ the model up to date.
 - Dynamic dispatch (registries, string lookups, reflection) makes a relation `inferred`, with a
   rationale, unless the registry line itself is cited.
 - Tests are evidence (`verified_by`, `type: test`), not elements.
+- `depends_on` points from consumer to provider and `calls` from caller to callee; V16 warns
+  when one looks reversed.
 - Renamed or moved code keeps its element id. Use `check-evidence --fix-moved`; change an id only
   when the concept itself is renamed, and list the old id in `aliases`.
 - `stale` evidence means the claim must be re-read in the code, not that it is wrong.
@@ -108,7 +110,7 @@ error, 3 not a Git repository or no model, 4 stale model with `--strict`.
 | `anchor` | Fill absent evidence hashes; `--refresh` replaces them for named elements. |
 | `check-evidence` | Classify evidence as fresh, moved, stale or missing; `--fix-moved` relocates. |
 | `fmt` | Canonical formatting; `--check` only reports. |
-| `validate` | Rules V1 to V15; `--strict` also fails on stale evidence and formatting. |
+| `validate` | Rules V1 to V16; `--strict` also fails on stale evidence and formatting. |
 | `sync` | Record HEAD as the synced commit. |
 | `query` | `neighbors`, `impact`, `lineage`, `shared-resources`, `refs`. |
 | `search` | Ranked text search over ids, names, summaries and statements. |

@@ -85,6 +85,9 @@ when there is one; never write `hash`. A two-line check cited as `"lines": [1, 2
   `exposure: unreachable`; cite the registration code you checked.
 - Dynamic dispatch (registries, string lookups) makes a relation `inferred` unless you cite the
   registry line.
+- Direction ("Relations" in model.md): `depends_on` from consumer to provider, `calls` from
+  caller to callee, cited at the line in the caller that invokes it. A client calls the
+  server's handler; a value received as an argument is not a call.
 - Check-then-act, a missing transaction or a missing constraint is recorded as what you see:
   the `reads` and `writes` relations, the `transactions` that exist (none means no entry), a
   `concurrency` or invariant `enforcement` entry with `none-detected` and the span you read.

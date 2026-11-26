@@ -30,8 +30,8 @@ you never need to read them.
 ## Shapes
 
 `"k"` is required and `"k?"` optional. `"a|b"` lists every allowed value. `[X]` is a list of X.
-Capitalised names are defined below. `+A` adds the annotation fields `"provenance?"`,
-`"rationale?"` and `"evidence?"`; without them an attribute inherits the element's provenance.
+Capitalised names are defined below. `+A` adds the `Annotation` fields; without them an
+attribute inherits the element's provenance.
 `+E` adds the envelope; a field written next to it replaces the envelope's version. Other words
 are hints: `id` is `kind:slug`, `ref` is an id or `id#part`, `text` is a non-empty string,
 `glob` a repository-relative glob. No other keys are allowed.
@@ -120,13 +120,28 @@ Stored on the source element only.
 `decision.affects`. Never store them. An observed relation that the target's evidence does not
 prove carries its own evidence (the line of the call).
 
+Direction: `depends_on` points from the consumer to the provider (a frontend depends on the
+service it calls). `calls` points from the caller to the callee, and its evidence is the line
+in the caller's code that invokes it, never a signature or a comment. A client that sends an
+HTTP request calls the server's handler, never the reverse. Data received as an argument is
+not a call. Wrong (on the handler, citing its own signature), then right (on the client):
+
+```json
+{"type": "calls", "target": "operation:app.send-deposit", "evidence": [{"type": "code", "path": "api/deposit.py", "lines": [4, 4]}]}
+```
+
+```json
+{"type": "calls", "target": "operation:parcel.deposit", "mechanism": "sync-http", "evidence": [{"type": "code", "path": "app/deposit.ts", "lines": [12, 12]}]}
+```
+
 ## Validation rules
 
 V1 schema; V2 ids, paths and aliases; V3 references resolve; V4 provenance needs evidence or
 rationale; V5 no `proposed` in `model/`; V6 evidence paths, lines and hashes; V7 stale evidence
 (error with `--strict`); V8 workflow steps; V9 secret scan; V10 `plain` text (warning); V11
 decision rules; V12 decisions referencing removed ids (warning); V13 formatting (error with
-`--strict`); V14 conflict markers; V15 views out of date (warning).
+`--strict`); V14 conflict markers; V15 views out of date (warning); V16 relation direction
+(warning).
 
 ## Commands
 

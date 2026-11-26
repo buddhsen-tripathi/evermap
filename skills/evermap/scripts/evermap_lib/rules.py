@@ -1,4 +1,4 @@
-"""Validation rules V1 to V15 (see docs/MODEL.md section 9)."""
+"""Validation rules V1 to V16 (see docs/MODEL.md section 9)."""
 
 import re
 
@@ -380,6 +380,54 @@ def _v15(report, model):
         report.warn("V15", path, "view is out of sync with the model: run render")
 
 
+# --- V16 ------------------------------------------------------------------
+
+IN_PROCESS = ("in-process", "sync-call", None, "")
+
+
+def _relations(element):
+    return [(i, r) for i, r in enumerate(_list(element.get("relations"))) if isinstance(r, dict)]
+
+
+def _technology(value):
+    """First word of a free-text technology, lowercased, keeping only letters, digits, + and #."""
+    words = str(value or "").lower().split()
+    return re.sub(r"[^0-9a-z+#]", "", words[0]) if words else ""
+
+
+def _v16(report, model):
+    """Relation direction: calls against a dependency, in-process calls across technologies, mutual dependencies."""
+    components = {i: e for i, e in model.elements.items() if e.get("kind") == "component"}
+    depends = {(i, r.get("target")) for i, c in components.items() for _, r in _relations(c)
+               if r.get("type") == "depends_on" and isinstance(r.get("target"), str)}
+    for a, b in sorted(depends):
+        if a < b and (b, a) in depends:
+            report.warn("V16", model.paths[a], "%s and %s depend on each other: check which one consumes the "
+                        "other and keep only that depends_on" % (a, b), ident=a)
+    for ident in sorted(model.elements):
+        op = model.elements[ident]
+        if op.get("kind") != "operation":
+            continue
+        for index, rel in _relations(op):
+            target = model.elements.get(rel.get("target")) if isinstance(rel.get("target"), str) else None
+            if rel.get("type") != "calls" or not target or rel.get("mechanism") not in IN_PROCESS:
+                continue
+            source, dest = op.get("parent"), target.get("parent")
+            if not isinstance(source, str) or not isinstance(dest, str) or source == dest \
+                    or source not in components or dest not in components:
+                continue
+            where = "$.relations[%d]" % index
+            if (dest, source) in depends:
+                report.warn("V16", model.paths[ident], "%s calls %s, but %s depends on %s: check the cited line is "
+                            "the call site in the caller; a client calls the server, not the reverse"
+                            % (ident, target["id"], dest, source), where, ident)
+            tech = [_technology(components[c].get("technology")) for c in (source, dest)]
+            if all(tech) and tech[0] != tech[1]:
+                report.warn("V16", model.paths[ident], "in-process call from %s (%s) to %s (%s), whose technologies "
+                            "differ: check the mechanism, the direction and that it is a call, not data received"
+                            % (ident, source, target["id"], dest), where, ident)
+
+
 # --- entry point ----------------------------------------------------------
 
 def run(root, model, strict=False):
@@ -404,6 +452,7 @@ def run(root, model, strict=False):
         report.add("V13", "error" if strict else "warning", path, "not canonically formatted: run fmt")
     _v14(report, model)
     _v15(report, model)
+    _v16(report, model)
     for slug in sorted(model.overlays):
         _overlay(report, model, slug)
     report.findings.sort(key=lambda f: (f["severity"] != "error", int(f["rule"][1:]), f["path"],
