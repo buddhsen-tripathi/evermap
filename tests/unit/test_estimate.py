@@ -253,6 +253,38 @@ class Plan(S.RepoCase):
         self.assertEqual(out["missing"], ["db/schema.sql"])
         self.assertIn("db/schema.sql", out["files"])
 
+    def test_unowned_lists_only_files_no_component_covers(self):
+        self.write_plan()
+        self.assertEqual(self.packet(1)["unowned_total"], 1)
+        out = self.packet(1, "--unowned", "--limit", "0")
+        self.assertEqual((out["unowned"], out["unowned_total"], out["total_files"]), (["tests/test_deposit.py"], 1, 6))
+        self.assertNotIn("ids", out)  # a continuation run needs only the files
+        # A new component covering the folder, or a declared gap, leaves nothing to map.
+        S.write_element(self.root, S.element("component:locker-tests", "Locker tests", "Tests.", plain="The tests.",
+                                             type="module", paths=["tests/**"], provenance="inferred",
+                                             rationale="Directory name."))
+        self.assertEqual(self.packet(1, "--unowned")["unowned"], [])
+        os.remove(os.path.join(self.root, *S.M.path_for_id("component:locker-tests").split("/")))
+        manifest = json.loads(S.read(self.root, ".evermap/evermap.json"))
+        manifest["coverage"]["unmapped"] = [{"path": "tests/**", "reason": "test code is evidence"}]
+        S.put(self.root, ".evermap/evermap.json", json.dumps(manifest))
+        out = self.packet(1, "--unowned")
+        self.assertEqual((out["unowned"], out["unowned_total"]), ([], 0))
+        self.assertEqual(self.packet(1)["unowned_total"], 0)
+
+    def test_unowned_skips_missing_files_and_pages(self):
+        self.write_plan()
+        os.remove(os.path.join(self.root, "tests", "test_deposit.py"))
+        self.assertEqual(self.packet(1, "--unowned")["unowned_total"], 0)
+        S.put(self.root, "tests/test_deposit.py", "X = 1\n")
+        S.put(self.root, "tests/test_collect.py", "X = 1\n")
+        self.write_plan()
+        out = self.packet(1, "--unowned", "--limit", "1", "--offset", "1")
+        self.assertEqual((out["unowned"], out["unowned_total"]), (["tests/test_deposit.py"], 2))
+        code, text, _ = S.run(self.root, "packet", "1", "--unowned", "--format", "md")
+        self.assertEqual(code, 0)
+        self.assertIn("tests/test\\_collect.py", text.decode())
+
     def test_paging_and_bounds(self):
         self.write_plan()
         out = self.packet(1, "--limit", "1", "--offset", "1")

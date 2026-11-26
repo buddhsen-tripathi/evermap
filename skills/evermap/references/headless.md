@@ -76,9 +76,20 @@ sandbox cannot limit writes to `.evermap/`, so the check below matters.
   nothing does.
 - A leftover `.evermap/draft.json` means `apply` rejected something: give the rejections to
   the next packet, or tell the user.
+- Append the reply's `pending:` lines to a temporary file outside the repository; the final
+  pass gets them (`discover.md`, "Calling agent").
 - Add the cost to the running total. At the approved budget, stop: do not `sync`, leave
   `.evermap/plan.json` (`status` shows it) and tell the user which packet numbers finished, so
   a later session runs the rest.
+- Run `packet <n> --unowned --format json`. If `unowned_total` is above 0, run that packet
+  once more, with the packet text followed by the continuation below, then move on. Report
+  the files still unowned after that run to the user; do not run the packet a third time.
+
+```
+Continuation: an earlier run of packet <n> stopped before every file was mapped. Run
+python3 <absolute skill dir>/scripts/evermap.py packet <n> --unowned
+and map only the files it lists, putting each under the paths of a component.
+```
 
 When every packet is done: `sync --mode <init|update>` (it deletes the plan), then `render`.
 Answer with `status`, `search` and `query ... --format md`, paged with `--limit`.

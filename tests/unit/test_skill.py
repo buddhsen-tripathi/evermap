@@ -128,7 +128,8 @@ class Headless(unittest.TestCase):
         self.assertIn("< /dev/null", block)
 
     def test_size_and_link(self):
-        self.assertLessEqual(len(self.text.splitlines()), 90)
+        # Raised from 90 for the unowned-file continuation and the pending lines (trial fixes).
+        self.assertLessEqual(len(self.text.splitlines()), 105)
         self.assertIn("`references/headless.md`", split_skill()[1])
         self.assertNotIn("](", self.text)  # no links to other reference files
 

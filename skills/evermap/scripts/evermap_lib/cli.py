@@ -387,14 +387,22 @@ def cmd_search(args, root):
     return OK
 
 
+def _unowned(model, files):
+    """(files no component's paths cover, predicate for files declared in coverage.unmapped)."""
+    owners = M.owners(model)
+    coverage = model.manifest.get("coverage") if isinstance(model.manifest.get("coverage"), dict) else {}
+    unmapped = coverage.get("unmapped") if isinstance(coverage.get("unmapped"), list) else []
+    known = M.matcher([u.get("path") for u in unmapped if isinstance(u, dict)])
+    return [p for p in files if not any(match(p) for _, match in owners)], known
+
+
 def cmd_coverage(args, root):
     model = M.load_worktree(root)
     scoped, owners = M.in_scope(model.manifest), M.owners(model)
     files = [p for p in gitio.list_files(root) if scoped(p)]
-    owned = {p for p in files if any(match(p) for _, match in owners)}
+    unowned, known = _unowned(model, files)
+    owned = set(files) - set(unowned)
     coverage = model.manifest.get("coverage") or {}
-    known = M.matcher([u.get("path") for u in coverage.get("unmapped") or [] if isinstance(u, dict)])
-    unowned = [p for p in files if p not in owned]
     parents = {o.get("parent") for o in model.of_kind("operation")}
     empty = [c["id"] for c in model.of_kind("component")
              if c.get("type") in ("service", "worker", "frontend", "module") and c["id"] not in parents]
@@ -688,6 +696,14 @@ def cmd_packet(args, root):
     packet = packets[args.number - 1]
     files = [p for p in packet.get("files") or [] if isinstance(p, str)]
     missing = [p for p in files if not E.valid_path(p) or not os.path.lexists(os.path.join(root, *p.split("/")))]
+    unowned, known = _unowned(model, [p for p in files if p not in missing])
+    unowned = [p for p in unowned if not known(p)]
+    if args.unowned:
+        # For a continuation run: only the files of this packet that no component owns yet.
+        emit(args, {"packet": args.number, "of": len(packets), "total_files": len(files),
+                    "unowned_total": len(unowned), "unowned": page(unowned, args),
+                    "note": "files no component's paths cover and coverage.unmapped does not declare"})
+        return OK
     ids = [{"id": i, "name": e.get("name") or e.get("title")} for i, e in sorted(model.elements.items())]
     emit(args, {
         "packet": args.number, "of": len(packets), "mode": plan.get("mode"),
@@ -695,6 +711,7 @@ def cmd_packet(args, root):
         "groups": packet.get("groups") or [],
         "scope": plan.get("scope") or {},
         "total_files": len(files), "files": page(files, args), "missing": page(missing, args),
+        "unowned_total": len(unowned),
         "total_ids": len(ids), "ids": page(ids, args),
         "paging": "--limit and --offset page files, missing and ids together",
     })
@@ -852,6 +869,8 @@ def build_parser():
     sub.add_argument("--write-plan", action="store_true", help="also write the packets with their files to %s" % PLAN)
     sub = add("packet", cmd_packet, "Print one packet of the plan: scope, files and the ids already in the model.")
     sub.add_argument("number", type=int, help="packet number, from 1")
+    sub.add_argument("--unowned", action="store_true",
+                     help="list only the packet's files that no component owns and coverage.unmapped does not declare")
     sub = add("diff", cmd_diff, "Compare the model at two refs, or a ref with the working tree.")
     sub.add_argument("refs", nargs="*", metavar="ref")
     sub.add_argument("--overlay", metavar="PROPOSAL", help="compare the working tree with a proposal overlay")

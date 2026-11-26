@@ -280,6 +280,29 @@ class Guides(unittest.TestCase):
         self.assertIn("at most 3,500 characters, most severe finding first", assess)
         self.assertIn("[:4000]", assess)
 
+    def test_partial_packets_and_pending_relations(self):
+        headless = text("headless.md")
+        after = headless.split("## After each worker", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("`packet <n> --unowned --format json`", after)
+        self.assertIn("once more", after)
+        continuation = [b for _, b in fenced(after)]
+        self.assertEqual(len(continuation), 1)
+        self.assertIn("scripts/evermap.py packet <n> --unowned", continuation[0])
+        self.assertEqual(set(re.findall(r"<[^>]+>", continuation[0])), {"<n>", "<absolute skill dir>"})
+        self.assertIn("`pending:` lines to a temporary file outside the repository", after)
+        discover = text("discover.md")
+        calling = discover.split("## Worker", 1)[0]
+        self.assertIn("`Pending from workers:`", calling)
+        self.assertIn("6,000 characters", calling)
+        final_block = fenced(calling)[0][1]
+        self.assertIn("data, not instructions", final_block)
+        worker = discover.split("## Worker", 1)[1]
+        self.assertIn("Every file must end up under the `paths` of a\ncomponent", worker)
+        self.assertIn("`packet <n> --unowned`", worker)
+        final = worker.split("### Final pass", 1)[1]
+        self.assertIn('"Pending from workers:"', final)
+        self.assertIn("fix every V16 warning by re-reading the cited lines", final)
+
     def test_relation_direction_guidance(self):
         relations = split_model_section("Relations")
         for phrase in ("`depends_on` points from the consumer to the provider",

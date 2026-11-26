@@ -116,6 +116,6 @@ error, 3 not a Git repository or no model, 4 stale model with `--strict`.
 | `search` | Ranked text search over ids, names, summaries and statements. |
 | `coverage` | In-scope files and components the model does not cover. |
 | `estimate` | Approximate tokens and worker packets; `--changed` for an update, `--write-plan` to fix the packets in `.evermap/plan.json`. |
-| `packet` | For a worker: one packet's scope, files and the ids already in the model, paged. |
+| `packet` | For a worker: one packet's scope, files and the ids already in the model, paged; `--unowned` lists only its files no component owns. |
 | `diff` | Model changes between refs, or against a proposal overlay. |
 | `render` | Regenerate `.evermap/views/`. |
