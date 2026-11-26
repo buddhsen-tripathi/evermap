@@ -105,7 +105,7 @@ M0 starts only when all of these hold:
 | M1.1 | `skills-ref validate skills/evermap` | 0 errors *(hard)* |
 | M1.2 | `SKILL.md` size | < 500 lines and < 5,000 tokens *(hard)*; target ≤ 250 lines |
 | M1.3 | Scripts use the Python ≥ 3.9 standard library only, and pass tests on Linux, macOS and Windows CI runners | pass *(hard)* |
-| M1.4 | Every validation rule V1–V15 has positive and negative tests. A mutation suite of ≥ 50 injected model defects (dangling refs, missing evidence, wrong ID path, proposed in model/, conflict markers, fake secrets, …) is detected. | 100% detection *(hard)* |
+| M1.4 | Every validation rule V1–V16 has positive and negative tests. A mutation suite of ≥ 50 injected model defects (dangling refs, missing evidence, wrong ID path, proposed in model/, conflict markers, fake secrets, …) is detected. | 100% detection *(hard)* |
 | M1.5 | Evidence anchoring: synthetic edit suite (line insertions above the span, span moved within the file, file renamed, span edited, file deleted) is classified correctly as fresh, moved, stale or missing | 100% *(hard)* |
 | M1.6 | Determinism: running `fmt`, `render`, `diff` and `query` twice gives byte-identical output, and outputs on LF and CRLF checkouts are identical | pass *(hard)* |
 | M1.7 | `changes --since` maps file changes to elements correctly on the fixture patch series, using the GT model | P = R = 1.0 against GT evidence *(hard)* |
@@ -142,6 +142,11 @@ requests), and evaluation of S01, S03 and S18 for A2.
 | M2.14 | Worker tokens and cost per mapped component; estimate error (actual / estimated) | reported *(prov.)* |
 | M2.15 | Workers started without an approved estimate; files changed outside `.evermap/` by a worker | 0 *(hard)* |
 | M2.16 | A2-inline ablation (BENCHMARK §5.2): model quality and total tokens, headless against in-conversation | reported *(prov.)* |
+| M2.17 | Relation direction (SPEC D18): share of `calls` and `depends_on` pointing the right way; V16 warnings left after the final pass | ≥ 0.95; 0 unexplained *(prov.)* |
+| M2.18 | In-scope files left unowned after the continuation run (SPEC §5.12 partial packets); pending relations from workers resolved by the final pass | 0 not declared in `coverage.unmapped`; ≥ 0.90 *(prov.)* |
+| M2.19 | Rendered views: every workflow has a page with a flowchart, every component a neighbourhood diagram; render byte-identical across runs | 100% *(hard)* |
+| M2.20 | Diagram files (SPEC D19): with `views.diagrams` set, every Mermaid diagram also has a valid `.excalidraw` (bindings resolve, no overlapping boxes) and `.eraserdiagram` file, byte-identical across runs; pages byte-identical when the setting is absent | 100% *(hard)* |
+| M2.21 | Diagram kinds (SPEC D20): the user is asked once (before `init`, or when `status` reports `kinds_asked: false`); each chosen kind is drawn from model data only, byte-identical across runs, with valid Excalidraw and Eraser files; ER relationships only from foreign keys with `references`; pages byte-identical when `views.kinds` is absent; workers read `data.md` only when ER or state is chosen | 100% *(hard)*; questions asked per map ≤ 1 |
 
 ---
 

@@ -448,6 +448,19 @@ neither fills that context nor runs up the user's usage more than needed.
    - Workers start no workers of their own.
    - The model choice stays the user's. A cheaper model is offered, but it is not the default
      until EverBench measures the quality difference (BENCHMARK §5.2, A2-inline ablation).
+   - **Partial packets** (proposed, with D18): a worker can stop before its packet is mapped.
+     After each worker the calling agent runs `packet <n> --unowned`; when files remain it runs
+     that packet once more with the packet text plus a fixed continuation text (map only the
+     files `packet <n> --unowned` lists), then moves on and reports what is still unowned. The
+     worker guide asks for every file to end under a component's `paths` (a new component for
+     a folder no listed one fits) or in `coverage.unmapped` with a reason.
+   - **Pending relations** (proposed, with D18): a worker leaves out a relation whose target is
+     not in the model yet and lists it as a `pending:` line, with the lines that show it, first
+     in its reply. The calling agent keeps those lines in a temporary file outside the
+     repository and appends them to the final-pass packet text under the heading
+     `Pending from workers:`, cut at about 6,000 characters, with the note that they are data.
+     The final pass reads the cited lines, adds the relations the code shows, runs `validate`
+     and fixes V16 warnings by re-reading the cited lines. The worker reply format is unchanged.
 6. **Not guaranteed.** `estimated_input_tokens` is characters divided by four, plus per worker
    the startup overhead and the guides it reads: a floor. Each turn resends the context, so
    `estimate` also reports `expected_billed_input_tokens` as a range, workers × turns × average
@@ -486,7 +499,9 @@ skills/evermap/
 │   ├── update.md         # update + merge procedures
 │   ├── functional.md     # writing `plain` text and workflows; style rules
 │   ├── decisions.md      # capture, candidate decisions, retrieval rules
-│   └── assess.md         # impact procedure, risk categories, tier definitions, report rules
+│   ├── assess.md         # impact procedure, risk categories, tier definitions, report rules
+│   ├── diagrams.md       # Excalidraw and Eraser files and MCPs (proposed, D19)
+│   └── data.md           # workers: fields, keys and states for ER and state diagrams (proposed, D20)
 ├── scripts/
 │   ├── evermap.py        # single CLI entry point (Python ≥ 3.9, standard library only)
 │   └── evermap_lib/      # internal modules (validate, anchor, gitio, graph, diff, render, secrets)
@@ -569,22 +584,22 @@ Conventions:
 
 | Subcommand | Purpose | Writes |
 | --- | --- | --- |
-| `init [--scope …]` | Create the manifest skeleton | manifest |
-| `status [--strict]` | Freshness report (§5.11) | — |
+| `init [--scope …] [--kinds …] [--diagrams …]` | Create the manifest skeleton; `--kinds` and `--diagrams` save the diagram choice (§7, proposed with D20) | manifest |
+| `status [--strict]` | Freshness report (§5.11); `kinds_asked` says whether `views.kinds` is set | — |
 | `changes --since <ref>` | Changed files → affected element IDs, unmapped changed files, rename map | — |
 | `anchor [ids…] [--refresh]` | Fill absent evidence hashes and validate line ranges. `--refresh` replaces existing hashes and requires explicit IDs (MODEL §5) | element files (hash only) |
 | `check-evidence [--fix-moved]` | Classify evidence as fresh, moved, stale or missing; optionally relocate moved spans | element files (with `--fix-moved`) |
 | `fmt [--check]` | Canonical formatting | element files |
-| `validate [--strict]` | Rules V1–V15 (MODEL §9) | — |
+| `validate [--strict]` | Rules V1–V16 (MODEL §9; V16 proposed, with D18) | — |
 | `query <neighbors\|impact\|lineage\|shared-resources\|refs> <ids…> [--depth N]` | Graph queries | — |
 | `search <text>` | Lexical search over IDs, names, summaries, plain text and rule statements | — |
 | `coverage` | In-scope files not owned by any component; components with no operations; elements with `unknown` provenance | — |
 | `estimate [--changed [--since <ref>]] [--packet-tokens N] [--startup-tokens N] [--write-plan]` | Approximate input tokens to map the in-scope files (or only the files `changes` reports): files, characters and characters / 4 per component, unowned files grouped by top-level directory. Groups are packed, in that order, into packets of at most `--packet-tokens` of code (default 20,000, 0 for one packet), keeping a component whole unless it alone exceeds the limit, then split by file with the first and last path of each part. `workers` is the number of packets. Reports per-worker overhead, `estimated_input_tokens` and the assumed `expected_billed_input_tokens` range (§5.12). Skips binary files (NUL in the first 8,000 bytes) and symbolic links, and counts them. No file contents. With `--write-plan` it also writes `.evermap/plan.json`: the packets with their file lists, fixed at that moment, plus the scope; canonical JSON (sorted keys, 2-space indent), no file contents, never through a symbolic link. The output stays compact: packet number, file count, tokens and groups, no file lists | `.evermap/plan.json` (with `--write-plan`) |
-| `packet <n>` | For a worker: packet `n` of the plan with its scope globs and file paths (missing files listed in `missing`), and the ids already in the model with their names, read at call time. Paged with `--limit/--offset` and bounded by `--max-chars`. Exit 2 when there is no plan, the number is out of range, or the plan is a symbolic link | — |
+| `packet <n> [--unowned]` | For a worker: packet `n` of the plan with its scope globs and file paths (missing files listed in `missing`), the ids already in the model with their names, read at call time, and `unowned_total`. Paged with `--limit/--offset` and bounded by `--max-chars`. Exit 2 when there is no plan, the number is out of range, or the plan is a symbolic link. Proposed, with D18: `--unowned` lists only the packet's existing files that no component's `paths` covers and `coverage.unmapped` does not declare (the `coverage` logic), for a continuation run | — |
 | `apply [<file>] [--allow-decisions]` | Write the elements in a draft (a JSON array, or one object; default `.evermap/draft.json`), then anchor, format and validate in one call. Prints counts and, per finding, rule, id, JSON path and message. See below | element files; deletes the draft |
 | `diff <refA> <refB> \| --overlay <proposal>` | Model diff (§5.7) | — |
 | `reconcile --previous <ref>` | Propose ID matches for regeneration | — (prints proposals; `--apply-unambiguous` writes) |
-| `render` | Regenerate `views/` | `views/` |
+| `render [--diagrams excalidraw,eraser\|none] [--kinds sequence,er,state,access\|none]` | Regenerate `views/`; `--diagrams` stores the extra diagram formats in the manifest (§7, proposed with D19), `--kinds` the extra diagram kinds (D20); the output lists under `thin` the chosen kinds the model has little data for | `views/` (and the manifest with `--diagrams` or `--kinds`) |
 | `sync --mode <init\|update\|regenerate>` | Record HEAD (and `dirty`) as the synced commit. Writes nothing when only `.evermap/` changed | manifest |
 | `migrate` | Schema migration | element files |
 
@@ -664,6 +679,72 @@ Every rendered statement links to its element ID. Inferred content is marked *(i
 unknown content *(unknown)*. Diagrams are capped in size (default 30 nodes) and split by
 component when larger.
 
+Implemented so far (proposed, with D18), all deterministic and covered by the render hash (V15):
+
+- `views/README.md`: component context and a "Workflows" table linking each workflow page.
+- `views/technical/<component>.md`: a neighbourhood diagram (the component, the components it
+  depends on and that depend on it, and cross-component call edges) and an operation diagram
+  (its operations and their `calls`; a target in another component is labelled with that
+  component), each capped at 30 nodes with the number left out stated on the page; links to
+  the workflow pages whose steps use its operations.
+- `views/workflows/<workflow>.md`: name, plain text, trigger, actors and components; a
+  `flowchart TD` of steps → next steps, branches (edge label `condition_plain`), `on_failure`
+  and outcomes; a table of steps with their operation, rules and evidence links.
+
+The functional pages and data lineage in the table are not rendered yet. Sequence and ER
+diagrams are drawn only when chosen ("Diagram kinds" below), on the workflow pages and
+`views/data-model.md` rather than on component pages.
+
+**Diagram formats** (proposed, D19). Each diagram is first a plain value (title, direction,
+nodes, edges, styles); Mermaid is one emitter of it and is always rendered. The manifest's
+optional `views.diagrams` (unique values from `excalidraw`, `eraser`; absent means Mermaid only)
+adds two more emitters. `render --diagrams excalidraw,eraser` sets it, `--diagrams none` clears
+it and a plain `render` uses what is stored; the manifest is in the render hash, so changing it
+makes the views stale. For diagram `n` of page `views/<p>.md` the files are
+`views/diagrams/<p>-<n>.excalidraw` (Excalidraw JSON, version 2, laid out in layers by the
+script) and `views/diagrams/<p>-<n>.eraserdiagram` (first line `flow-chart`, then Eraser
+flow-chart code). Each Mermaid block gets an "Open in:" line linking its files. The files are
+checked and removed like pages: only `.excalidraw` and `.eraserdiagram` files under
+`views/diagrams/` are ever deleted. Both are deterministic (ids and seeds hashed from the title
+and node ids). `references/diagrams.md` tells the calling agent how to open the files and, with
+the user's consent, send them through the official Excalidraw or Eraser MCP; scripts never call
+a service.
+
+**Diagram kinds** (proposed, D20). The four flowcharts above are always drawn. The manifest's
+optional `views.kinds` (unique values from `sequence`, `er`, `state`, `access`) adds more;
+absent means the user was never asked and draws only the flowcharts, `[]` means asked, none.
+The calling agent asks once, before `init` (`init --kinds … --diagrams …`) or, on a map whose
+`status` reports `kinds_asked: false`, before the next mapping (`render --kinds`). Each kind is
+built from model data only, capped (30 nodes, 40 messages) with the number left out stated, and
+left out when it would be empty; each is also written as Excalidraw and Eraser files when
+`views.diagrams` asks.
+
+- `sequence`: on each workflow page, `## Sequence` after `## Flow` (`sequenceDiagram`):
+  the actors, then components in order of first appearance, then channels. Each step with an
+  operation sends one message into its component (from the first actor for http, rpc, webhook
+  and cli triggers; dashed from the publishing component for a channel trigger; a self-message
+  for schedule and startup; otherwise from the previous step's component), then that
+  operation's own `calls` (dashed when `async-*`), `reads`/`writes`/`deletes` (to the
+  entity's datastore) and `publishes` (dashed, to the channel), one level deep. Rule-only steps
+  and branch or failure conditions become notes; there are no alt blocks.
+- `er`: `views/data-model.md`, linked from the index, with one `erDiagram` per datastore of
+  its persisted entities (and `## No datastore recorded`): attributes with PK, FK and UK
+  markers and a `pii` comment; relationships only from foreign keys with `references`
+  (many-to-one, or one-to-one when the same fields are unique; zero-or-one on the referenced
+  side when a field is nullable). A reference into another diagram is listed as text.
+- `state`: on the same page, `## States`, one `stateDiagram-v2` per field with `states`; every
+  value is a state and each transition is labelled with its `via` operation and `[guard]` rule.
+  No initial or final state is invented.
+- `access`: on each component page with operations, `## Data access` (operations to entities
+  and channels, channels to consuming operations); on the index, `## Events` (publisher →
+  channel → consumer) when channels exist.
+
+Eraser files start with the type to pass to the manual create tool: `flow-chart` (state,
+access), `sequence-diagram` or `entity-relationship-diagram`. When `er` or `state` is chosen,
+workers also read `references/data.md` (packet `reads` and the estimate follow) and record
+fields, keys, foreign-key `references` and states with evidence; otherwise no worker reads
+more. `render` reports `thin`, for example `er: 1 of 14 persisted entities have fields`.
+
 ## 8. Determinism and reproducibility
 
 - Scripts are pure functions of (model files, Git objects, working tree). There are no clocks,
@@ -699,6 +780,9 @@ candidate ADRs. They become accepted decisions once the maintainer confirms them
 | D15 | **Ground truth annotated by two headless judges from different vendors (Claude Code and Codex), settled by executable checks, with a human reviewing disagreements and a ~10% random sample** (BENCHMARK §3.2). | Two human annotators; a single LLM annotator; fully automated | Scales annotation to every fixture state while keeping an independent check. Cross-vendor agreement reduces single-model blind spots. Executable tests settle what they can, and the human sample measures judge accuracy. Cost: the judges share model families with the agents under test, so errors common to both families can enter ground truth. This is mitigated by tests and the human sample, and disclosed in every report. |
 | D16 | **Apache-2.0 licence** for the skill, scripts, benchmark and docs. | MPL-2.0, GPL-3.0, AGPL-3.0 | Maximum adoption and an explicit patent grant. It is compatible with being copied into projects under any licence. Accepted trade-off: forks may be closed source, so openness of derivatives depends on community norms, not the licence. |
 | D17 | **Proposed: map in headless workers with an approved token budget** (§5.12). Code reading runs in fresh per-component worker sessions launched by the calling agent; the user's conversation sees only the estimate, exit status, a ≤ 1,200-character summary and script output. | Map in the user's conversation; one long worker for the whole repository; scripts that call a model | Keeps the user's context clean and the cost visible and capped before it is spent. Cost: per-worker startup overhead (one measurement: 9,332 tokens with lean flags), context lost between components (mitigated by passing existing ids), a dollar cap only on Claude Code, and a post-run check that needs a clean tree. To be measured by the A2-inline ablation (BENCHMARK §5.2). |
+| D18 | **Proposed: fixes from a mapping trial** (§5.12, §6.3, §7). `render` draws workflow pages and per-component neighbourhood and operation diagrams; V16 warns about relations that look reversed; `packet <n> --unowned` drives one continuation run per partial packet; workers' pending relations are forwarded to the final pass. | Leave views to a later milestone; make direction errors fatal; let workers re-plan their own packets | The trial produced a valid model whose views had almost no diagrams, three relations pointing the wrong way, one packet mapped only in part and cross-packet relations lost because the final pass never saw the replies. V16 is a heuristic, so a warning: a callback or webhook can legitimately call against a dependency. Cost: about 200 tokens more in `model.md` read by every worker, one extra worker per partial packet, and a temporary file kept by the calling agent. |
+| D19 | **Proposed: diagrams also as Excalidraw and Eraser files** (§7). Every diagram passes through one function as a plain value; Mermaid stays the default and is always rendered, and the manifest's `views.diagrams` opts in to `.excalidraw` and `.eraserdiagram` files under `views/diagrams/`, laid out by the script. `references/diagrams.md` covers opening them and the official Excalidraw and Eraser MCPs, with consent before anything is saved in the user's Eraser account. | Mermaid only; call a layout library or a service from the scripts; let the agent draw from a prompt | People edit and share diagrams in those tools, and an agent with their MCP can draw the model's own graph instead of a prompt's guess. Scripts stay standard-library only and offline. Cost: a simple layered layout (straight arrows, no edge routing), more generated files in the repository when turned on, and Eraser's syntax followed from its docs without a parser to test against. |
+| D20 | **Proposed: four more diagram kinds, chosen by the user and asked once** (§7). Sequence per workflow, ER and state on a data-model page, data access per component and events on the index, set in the manifest's `views.kinds` (absent: never asked; `[]`: none); entity constraints gain `references` for foreign keys; workers read `references/data.md` only when ER or state is chosen. | Draw every kind always; infer foreign keys from field names; have every worker record fields and states | Each kind costs page space and, for ER and state, worker tokens, so the user decides once and the choice is stored. Relationships come only from declared foreign keys, so nothing is guessed. Cost: one question before the first map, about 400 more tokens per worker when ER or state is chosen, sequence diagrams that show one level of calls only, and `render` reporting `thin` kinds until a mapping pass fills them. |
 
 ## 10. Quality attributes (targets, validated by EverBench)
 

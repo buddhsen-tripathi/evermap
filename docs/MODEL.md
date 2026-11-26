@@ -287,7 +287,7 @@ messages and DTOs.
 | --- | --- |
 | `type` | `table`, `collection`, `document`, `cache-key`, `file`, `message`, `dto` |
 | `fields` | `[Field]` (§6.4) |
-| `constraints` | `[{"type": "primary-key"\|"unique"\|"foreign-key"\|"check"\|"exclusion"\|"not-null", "fields": [...], "detail": "…", "provenance", "evidence"}]` |
+| `constraints` | `[{"type": "primary-key"\|"unique"\|"foreign-key"\|"check"\|"exclusion"\|"not-null", "fields": [...], "detail": "…", "references": "entity:x#field"\|"entity:x"?, "provenance", "evidence"}]`. `references` (proposed, SPEC D20) names a foreign key's target; V3 checks it resolves to an entity or one of its fields. |
 
 ### 6.4 Fields and data lineage
 
@@ -512,6 +512,12 @@ proposals/allow-partial-refunds/
   continue in a later session (SPEC §5.1).
 - `coverage` makes gaps explicit. Impact reports must cite it when an affected area is unmapped,
   so that "not found" is never read as "does not exist".
+- `views.diagrams` (optional, proposed with SPEC D19) lists the extra diagram formats `render`
+  writes, unique values from `excalidraw` and `eraser`; absent means Mermaid only. Set it with
+  `render --diagrams`.
+- `views.kinds` (optional, proposed with SPEC D20) lists the diagram kinds drawn besides the
+  four flowcharts, unique values from `sequence`, `er`, `state` and `access`. Absent means the
+  user was never asked; `[]` means asked, none. Set it with `init --kinds` or `render --kinds`.
 - There is no timestamp, so an update with no changes is byte-identical (EverBench S14).
 
 ## 9. Validation rules (enforced by `scripts/evermap.py validate`)
@@ -533,6 +539,7 @@ proposals/allow-partial-refunds/
 | V13 | Files are canonically formatted (`fmt --check`). | error in `--strict` |
 | V14 | No Git conflict markers anywhere under `.evermap/`. | error |
 | V15 | `views/` is in sync with the model: the render hash recorded in `views/README.md` matches. | warning |
+| V16 | Relation direction (proposed, SPEC D18): a cross-component `calls` with mechanism `in-process`, `sync-call` or none goes to a component that itself `depends_on` the caller's component; such an in-process call joins components whose `technology` differs; or two components `depends_on` each other. The message names both ids and what to check (the call site in the caller, the mechanism, data received rather than called). | warning |
 
 The validator prints a JSON report to stdout and exits non-zero on any error.
 

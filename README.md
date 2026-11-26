@@ -38,3 +38,6 @@ npx skills add buddhsen-tripathi/evermap --skill evermap
 
 Mapping runs in headless workers after the user approves a token estimate; see
 `skills/evermap/references/headless.md`.
+
+Views draw their diagrams in Mermaid. `render --diagrams excalidraw,eraser` also writes each one
+as an Excalidraw and an Eraser file (proposed); see `skills/evermap/references/diagrams.md`.
