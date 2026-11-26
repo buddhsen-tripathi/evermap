@@ -1,5 +1,7 @@
 # Evermap
 
+[![skills.sh](https://skills.sh/b/buddhsen-tripathi/evermap)](https://skills.sh/buddhsen-tripathi/evermap)
+
 Evermap is an open-source [Agent Skill](https://agentskills.io/specification) that keeps a
 living, evidence-backed, version-controlled model of a software application inside the
 application's own repository.
