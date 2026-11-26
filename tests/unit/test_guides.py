@@ -106,7 +106,7 @@ class Guides(unittest.TestCase):
     def test_every_guide_exists_and_is_lean(self):
         for name in GUIDES:
             body = text(name)
-            self.assertLessEqual(len(body.splitlines()), 130, name)
+            self.assertLessEqual(len(body.splitlines()), 135, name)  # 130 before the diagram question
             self.assertLessEqual((len(body) + 3) // 4, 2000, name)
             self.assertIn("Unmeasured", body.split("\n## ", 1)[0], name)
 

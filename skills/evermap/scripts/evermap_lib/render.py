@@ -1,8 +1,10 @@
-"""Deterministic rendering of views from the model (minimal technical view)."""
+"""Deterministic rendering of views from the model: index, component pages and workflow pages."""
 
 import hashlib
 import html
+import posixpath
 import re
+import textwrap
 from urllib.parse import quote
 
 from . import graph as G
@@ -30,7 +32,7 @@ def label(value):
     """Escape model text for a quoted Mermaid label."""
     flat = " ".join(str(value).split())
     flat = flat.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
-    return flat.replace("#", "&num;").replace("`", "'")
+    return flat.replace("#", "&num;").replace("`", "'").replace("|", "&#124;")
 
 
 def mark(item):
@@ -42,16 +44,35 @@ def slug(identifier):
     return identifier.split(":", 1)[1]
 
 
-def flowchart(nodes, edges, styles=None):
-    """Mermaid flowchart. nodes: [(id, label)], edges: [(source, target, label)]."""
-    names = {ident: "n%d" % i for i, (ident, _) in enumerate(nodes)}
-    out = ["```mermaid", "flowchart LR"]
-    out += ['  %s["%s"]' % (names[i], label(t)) for i, t in nodes]
-    for source, target, title in edges:
-        if source in names and target in names:
-            arrow = ' -->|"%s"| ' % label(title) if title else " --> "
-            out.append("  %s%s%s" % (names[source], arrow, names[target]))
-    for style, members in sorted((styles or {}).items()):
+FORMATS = {"excalidraw": ("Excalidraw", ".excalidraw"), "eraser": ("Eraser", ".eraserdiagram")}
+ORDER = ("excalidraw", "eraser")
+DIAGRAMS = VIEWS + "diagrams/"
+LABEL_CAP = 160
+
+
+def plain(value):
+    """Model text as a plain one-line diagram label, capped in length (Excalidraw and Eraser)."""
+    flat = " ".join(str(value).split())
+    return flat if len(flat) <= LABEL_CAP else flat[:LABEL_CAP - 3] + "..."
+
+
+def diagram(title, nodes, edges, styles=None, direction="LR"):
+    """A diagram as a plain value. nodes: [(id, label)], edges: [(source, target, label)] between nodes."""
+    known = {ident for ident, _ in nodes}
+    return {"title": title, "direction": direction, "nodes": [tuple(n) for n in nodes],
+            "edges": [tuple(e) for e in edges if e[0] in known and e[1] in known], "styles": styles or {}}
+
+
+def mermaid(value):
+    """Mermaid flowchart lines for a diagram value."""
+    names = {ident: "n%d" % i for i, (ident, _) in enumerate(value["nodes"])}
+    out = ["```mermaid", "flowchart " + value["direction"]]
+    out += ['  %s["%s"]' % (names[i], label(t)) for i, t in value["nodes"]]
+    for source, target, title in value["edges"]:
+        arrow = ' -->|"%s"| ' % label(title) if title else " --> "
+        out.append("  %s%s%s" % (names[source], arrow, names[target]))
+    styles = value["styles"]
+    for style, members in sorted(styles.items()):
         inside = [names[m] for m in sorted(members) if m in names]
         if inside:
             out.append("  class %s %s" % (",".join(inside), style))
@@ -60,6 +81,174 @@ def flowchart(nodes, edges, styles=None):
                 "  classDef removed stroke:#cf222e,stroke-width:3px,stroke-dasharray:4",
                 "  classDef modified stroke:#bf8700,stroke-width:3px"]
     return out + ["```"]
+
+
+def flowchart(nodes, edges, styles=None, direction="LR", page=None, title=""):
+    """Every diagram goes through here. Mermaid lines; with a page, also kept for the extra formats."""
+    value = diagram(title, nodes, edges, styles, direction)
+    return page.add(value) if page is not None else mermaid(value)
+
+
+# --- the diagram kinds the user chooses (views.kinds) -----------------------
+
+KINDS = ("sequence", "er", "state", "access")
+_MERMAID_TEXT = {"#": "#35;", ";": "#59;", "<": "#lt;", ">": "#gt;", "&": "#amp;", '"': "#quot;", "|": "#124;",
+                 "`": "'", "{": "(", "}": ")"}
+
+
+def mtext(value):
+    """Model text for a Mermaid sequence, state or ER label: one line, capped, entity-coded."""
+    return re.sub(r"[#;<>&\"|`{}]", lambda m: _MERMAID_TEXT[m.group(0)], plain(value))
+
+
+def token(value, fallback):
+    """A single Mermaid word: letters, digits and underscores, not starting with a digit."""
+    word = re.sub(r"[^A-Za-z0-9_]+", "_", " ".join(str(value).split())).strip("_")[:60] or fallback
+    return "_" + word if word[0].isdigit() else word
+
+
+def sequence(title, participants, messages, notes=()):
+    """A sequence diagram value. participants: [(id, label, is_actor)]; messages: [(source, target,
+    label, dashed)] in order; notes: [(after, participant, text, rule)], after = messages before it,
+    rule = the rule names of a step that has no operation, else ""."""
+    known = {p[0] for p in participants}
+    return {"kind": "sequence", "title": title, "participants": [tuple(p) for p in participants],
+            "messages": [tuple(m) for m in messages if m[0] in known and m[1] in known],
+            "notes": [tuple(n) for n in notes if n[1] in known]}
+
+
+def er(title, entities, relationships):
+    """An ER diagram value. entities: [(id, label, [(name, type, keys, comment)])], keys from PK, FK,
+    UK; relationships: [(source, target, source_card, target_card, (source fields), target field or
+    None)] with cards "many", "zero-or-one" or "one": each target has source_card sources, each
+    source target_card targets."""
+    known = {e[0] for e in entities}
+    return {"kind": "er", "title": title,
+            "entities": [(i, t, [tuple(a) for a in attrs]) for i, t, attrs in entities],
+            "relationships": [(r[0], r[1], r[2], r[3], tuple(r[4]), r[5]) for r in relationships
+                              if r[0] in known and r[1] in known]}
+
+
+def state(title, values, transitions):
+    """A state diagram: the flowchart value (states as nodes, transitions as edges) marked as state."""
+    return dict(diagram(title, [(v, v) for v in values], transitions), kind="state")
+
+
+def _note(value):
+    """Mermaid does not wrap a note, so a long one breaks into lines of about 50 characters."""
+    return "<br/>".join(mtext(line) for line in textwrap.wrap(plain(value), 50)) or mtext(value)
+
+
+def _mermaid_sequence(value):
+    names = {p[0]: "p%d" % i for i, p in enumerate(value["participants"])}
+    out = ["```mermaid", "sequenceDiagram"]
+    out += ["  %s %s as %s" % ("actor" if actor else "participant", names[i], mtext(t))
+            for i, t, actor in value["participants"]]
+    messages = value["messages"]
+    for index in range(len(messages) + 1):
+        out += ["  Note over %s: %s" % (names[n[1]], _note(n[2])) for n in value["notes"] if n[0] == index]
+        if index < len(messages):
+            source, target, title, dashed = messages[index]
+            out.append("  %s%s%s: %s" % (names[source], "-->>" if dashed else "->>", names[target], mtext(title)))
+    return out + ["```"]
+
+
+_CARDS = {("many", True): "}o", ("zero-or-one", True): "|o", ("one", True): "||",
+          ("many", False): "o{", ("zero-or-one", False): "o|", ("one", False): "||"}
+
+
+def er_names(value):
+    """{entity id: unique Mermaid word} in entity order."""
+    names, used = {}, set()
+    for ident, title, _ in value["entities"]:
+        word, n = token(title, "entity"), 1
+        while (word if n == 1 else "%s_%d" % (word, n)) in used:
+            n += 1
+        names[ident] = word if n == 1 else "%s_%d" % (word, n)
+        used.add(names[ident])
+    return names
+
+
+def _mermaid_er(value):
+    names = er_names(value)
+    out = ["```mermaid", "erDiagram"]
+    for ident, _, attrs in value["entities"]:
+        if not attrs:
+            out.append("  " + names[ident])
+            continue
+        out.append("  %s {" % names[ident])
+        for name, kind, keys, comment in attrs:
+            line = "    %s %s" % (token(kind, "unknown"), token(name, "field"))
+            line += " " + ", ".join(keys) if keys else ""
+            out.append(line + (' "%s"' % mtext(comment) if comment else ""))
+        out.append("  }")
+    for source, target, near, far, fields, _ in value["relationships"]:
+        out.append('  %s %s--%s %s : "%s"' % (names[source], _CARDS[(near, True)], _CARDS[(far, False)],
+                                              names[target], mtext(", ".join(fields)) or "references"))
+    return out + ["```"]
+
+
+def _mermaid_state(value):
+    names = {ident: "s%d" % i for i, (ident, _) in enumerate(value["nodes"])}
+    out = ["```mermaid", "stateDiagram-v2"]
+    out += ['  state "%s" as %s' % (mtext(t), names[i]) for i, t in value["nodes"]]
+    for source, target, title in value["edges"]:
+        out.append("  %s --> %s%s" % (names[source], names[target], " : " + mtext(title) if title else ""))
+    return out + ["```"]
+
+
+def emit_mermaid(value):
+    """Mermaid lines for any diagram value."""
+    return {"sequence": _mermaid_sequence, "er": _mermaid_er, "state": _mermaid_state}.get(
+        value.get("kind"), mermaid)(value)
+
+
+def formats(manifest):
+    """The extra diagram formats the manifest turns on, in a fixed order."""
+    views = manifest.get("views") if isinstance(manifest, dict) else None
+    chosen = views.get("diagrams") if isinstance(views, dict) else None
+    return [f for f in ORDER if isinstance(chosen, list) and f in chosen]
+
+
+def kinds(manifest):
+    """The diagram kinds the manifest asks for, in a fixed order; none when it has not been asked."""
+    views = manifest.get("views") if isinstance(manifest, dict) else None
+    chosen = views.get("kinds") if isinstance(views, dict) else None
+    return [k for k in KINDS if isinstance(chosen, list) and k in chosen]
+
+
+def kinds_asked(manifest):
+    views = manifest.get("views") if isinstance(manifest, dict) else None
+    return isinstance(views, dict) and isinstance(views.get("kinds"), list)
+
+
+def is_diagram_file(path):
+    return path.startswith(DIAGRAMS) and path.endswith(tuple(ext for _, ext in FORMATS.values()))
+
+
+class Page:
+    """Collects the diagrams of one view page and links each to its files in the extra formats."""
+
+    def __init__(self, path, extra=()):
+        self.path, self.extra, self.diagrams = path, list(extra), []
+
+    def file(self, number, fmt):
+        return DIAGRAMS + "%s-%d%s" % (self.path[len(VIEWS):-len(".md")], number, FORMATS[fmt][1])
+
+    def add(self, value):
+        self.diagrams.append(value)
+        out = emit_mermaid(value)
+        if self.extra:
+            here = posixpath.dirname(self.path)
+            links = ["[%s](%s)" % (FORMATS[f][0], quote(posixpath.relpath(self.file(len(self.diagrams), f), here)))
+                     for f in self.extra]
+            out += ["", "Open in: " + " · ".join(links)]
+        return out
+
+    def files(self):
+        from . import eraser, excalidraw
+        emit = {"excalidraw": excalidraw.dumps, "eraser": eraser.dumps}
+        return {self.file(n, f): emit[f](value) for n, value in enumerate(self.diagrams, 1) for f in self.extra}
 
 
 def _links(element, depth):
@@ -98,7 +287,49 @@ def _operation_row(op):
     ]
 
 
-def _component_page(model, component, graph):
+def _left_out(shown, total, what):
+    if total <= shown:
+        return []
+    return ["The diagram shows %d of %d %s; %d left out." % (shown, total, what, total - shown), ""]
+
+
+def _neighbourhood(model, ident, edges, page=None):
+    """This component, the components it depends on or that depend on it, and the edges between them."""
+    near = sorted({b if a == ident else a for a, b, _ in edges if ident in (a, b)} - {ident})
+    names = {c["id"]: c["name"] for c in model.of_kind("component")}
+    nodes = [(i, names.get(i, i)) for i in [ident] + near][:MAX_NODES]
+    out = ["## Neighbourhood", ""]
+    if not near:
+        out += ["No dependency or operation call links this component to another one in the model.", ""]
+    out += flowchart(nodes, [e for e in edges if ident in e[:2]], page=page,
+                     title="Component: %s - neighbourhood" % names.get(ident, ident)) + [""]
+    return out + _left_out(len(nodes), 1 + len(near), "components")
+
+
+def _operation_diagram(model, operations, page=None, name=""):
+    """This component's operations and the operations they call, labelled with their component."""
+    own = [o["id"] for o in operations]
+    targets, edges = set(), set()
+    for op in operations:
+        for rel in op.get("relations") or []:
+            target = model.get(rel["target"]) if rel.get("type") == "calls" else None
+            if target and target.get("kind") == "operation":
+                edges.add((op["id"], target["id"], rel.get("mechanism", "")))
+                if target["id"] not in own:
+                    targets.add(target["id"])
+    nodes = [(o["id"], o["name"]) for o in operations]
+    for target in sorted(targets):
+        element = model.get(target)
+        parent = model.get(element.get("parent") or "") or {}
+        nodes.append((target, "%s (%s)" % (element["name"], parent.get("name", "no component"))))
+    out = ["## Operation calls", ""]
+    if not edges:
+        out += ["No operation here calls another operation in the model.", ""]
+    out += flowchart(nodes[:MAX_NODES], sorted(edges), page=page, title="Component: %s - operation calls" % name) + [""]
+    return out + _left_out(min(len(nodes), MAX_NODES), len(nodes), "operations and call targets")
+
+
+def _component_page(model, component, graph, edges=(), flows=(), page=None, chosen=()):
     ident = component["id"]
     out = [MARKER, "", "# %s%s" % (text(component["name"]), mark(component)), "",
            "%s · %s%s" % (code(ident), text(component.get("type", "")),
@@ -110,6 +341,15 @@ def _component_page(model, component, graph):
     if component.get("responsibilities"):
         out += ["## Responsibilities", ""] + ["- " + text(r) for r in component["responsibilities"]] + [""]
     operations = [o for o in model.of_kind("operation") if o.get("parent") == ident]
+    out += _neighbourhood(model, ident, list(edges), page)
+    if operations:
+        out += _operation_diagram(model, operations, page, component["name"])
+        if "access" in chosen:
+            out += K.access_section(model, component, operations, page)
+    if flows:
+        out += ["## Workflows", ""]
+        out += ["- [%s](../workflows/%s.md)%s" % (text(w["name"]), quote(slug(w["id"])), mark(w))
+                for w in flows] + [""]
     if operations:
         out += ["## Operations", ""]
         out += _table(["Operation", "Trigger", "Exposure", "Authentication", "Transactions", "Idempotency", "Evidence"],
@@ -137,6 +377,88 @@ def _component_page(model, component, graph):
     return "\n".join(out).rstrip("\n") + "\n"
 
 
+def _workflow_components(model, workflow):
+    """Ids of the components whose operations the workflow's steps use, sorted."""
+    found = set()
+    for step in workflow.get("steps") or []:
+        op = model.get(step.get("operation") or "") if isinstance(step, dict) else None
+        if op and op.get("parent") and model.get(op["parent"]):
+            found.add(op["parent"])
+    return sorted(found)
+
+
+def _ref(model, ident):
+    """An id with its name, from a workflow page; a component links to its page."""
+    element = model.get(ident)
+    if not element:
+        return code(ident)
+    name = text(element.get("name") or element.get("title") or "")
+    if element.get("kind") == "component":
+        return "[%s](../technical/%s.md)" % (name, quote(slug(ident)))
+    return "%s %s" % (code(ident), name)
+
+
+def _flow(steps, outcomes):
+    """Nodes and edges of a workflow: steps, then outcomes; next, branches and failures as edges."""
+    nodes = [("s:%s" % s.get("id"), "%s: %s" % (s.get("id"), s.get("plain", ""))) for s in steps]
+    nodes += [("o:%s" % o.get("id"), "%s: %s" % (o.get("type", ""), o.get("plain", ""))) for o in outcomes]
+    edges = []
+    for step in steps:
+        here = "s:%s" % step.get("id")
+        edges += [(here, "s:%s" % n, "") for n in step.get("next") or []]
+        if step.get("outcome"):
+            edges.append((here, "o:%s" % step["outcome"], ""))
+        for group, key, prefix in (("branches", "condition_plain", ""), ("on_failure", "plain", "fails: ")):
+            for branch in step.get(group) or []:
+                for field, kind in (("next", "s:"), ("outcome", "o:")):
+                    if isinstance(branch, dict) and branch.get(field):
+                        edges.append((here, kind + str(branch[field]), prefix + str(branch.get(key, ""))))
+    return nodes, edges
+
+
+def _workflow_page(model, workflow, page=None, chosen=()):
+    ident = workflow["id"]
+    out = [MARKER, "", "# %s%s" % (text(workflow["name"]), mark(workflow)), "", code(ident), "",
+           text(workflow["summary"]), ""]
+    if workflow.get("plain"):
+        out += ["> " + text(workflow["plain"]), ""]
+    if workflow.get("trigger_plain"):
+        out += ["Trigger: " + text(workflow["trigger_plain"]), ""]
+    if workflow.get("actors"):
+        out += ["Actors: " + ", ".join(_ref(model, a) for a in workflow["actors"]), ""]
+    components = _workflow_components(model, workflow)
+    if components:
+        out += ["Components: " + ", ".join(_ref(model, c) for c in components), ""]
+    out += ["Evidence: " + _links(workflow, 3), ""]
+    steps = [s for s in workflow.get("steps") or [] if isinstance(s, dict)]
+    outcomes = [o for o in workflow.get("outcomes") or [] if isinstance(o, dict)]
+    nodes, edges = _flow(steps, outcomes)
+    out += ["## Flow", ""] + flowchart(nodes[:MAX_NODES], edges, direction="TD", page=page,
+                                       title="Workflow: %s - flow" % workflow["name"]) + [""]
+    out += _left_out(min(len(nodes), MAX_NODES), len(nodes), "steps and outcomes")
+    if "sequence" in chosen:
+        out += K.sequence_section(model, workflow, page)
+    rows = []
+    for step in steps:
+        op = model.get(step.get("operation") or "")
+        operation = "—"
+        if step.get("operation"):
+            operation = code(step["operation"]) + (" " + text(op["name"]) if op else "")
+            parent = model.get((op or {}).get("parent") or "")
+            if parent:
+                operation += " in " + _ref(model, parent["id"])
+        rules = ", ".join(_ref(model, r) for r in step.get("rules") or []) or "—"
+        # The step's own evidence, or else that of its operation.
+        rows.append([code(step.get("id", "")), text(step.get("plain", "")) + mark(step), operation, rules,
+                     _links(step if step.get("evidence") else (op or {}), 3)])
+    out += ["## Steps", ""] + _table(["Step", "What happens", "Operation", "Rules", "Evidence"], rows) + [""]
+    if outcomes:
+        out += ["## Outcomes", ""]
+        out += ["- %s %s: %s" % (code(o.get("id", "")), text(o.get("type", "")), text(o.get("plain", "")))
+                for o in outcomes] + [""]
+    return "\n".join(out).rstrip("\n") + "\n"
+
+
 def _component_edges(model):
     """Edges between components, declared or implied by operation calls."""
     edges = {}
@@ -154,7 +476,7 @@ def _component_edges(model):
     return [(a, b, t) for (a, b), t in sorted(edges.items())]
 
 
-def _index(model, digest):
+def _index(model, digest, page=None, chosen=(), data_model=False):
     manifest = model.manifest
     system = manifest.get("system") or {}
     coverage = manifest.get("coverage") or {}
@@ -177,9 +499,20 @@ def _index(model, digest):
                         text(c.get("type", "")), text(c["summary"])] for c in components]) + [""]
         shown = components[:MAX_NODES]
         out += ["## Context", ""]
-        out += flowchart([(c["id"], c["name"]) for c in shown], _component_edges(model)) + [""]
+        out += flowchart([(c["id"], c["name"]) for c in shown], _component_edges(model), page=page,
+                         title="System: %s - context" % system.get("name", "System")) + [""]
         if len(components) > MAX_NODES:
             out += ["The diagram shows %d of %d components." % (MAX_NODES, len(components)), ""]
+    if "access" in chosen and model.of_kind("channel"):
+        out += K.events_section(model, page)
+    workflows = model.of_kind("workflow")
+    if workflows:
+        out += ["## Workflows", ""]
+        out += _table(["Workflow", "Summary"],
+                      [["[%s](workflows/%s.md)%s" % (text(w["name"]), quote(slug(w["id"])), mark(w)),
+                        text(w["summary"])] for w in workflows]) + [""]
+    if data_model:
+        out += ["## Data model", "", "[Data model](data-model.md): persisted entities, keys and states.", ""]
     out += ["## Coverage", "",
             "This model is selective. Something that is not listed here may still exist in the code.", ""]
     for item in coverage.get("unmapped") or []:
@@ -205,16 +538,50 @@ def digest(model):
 
 
 def build(model):
-    """{path: text} for all views. Raises KeyError or TypeError on an invalid model."""
-    graph = G.Graph(model)
-    pages = {VIEWS + "README.md": _index(model, digest(model))}
+    """{path: text} for all views and diagram files. Raises KeyError or TypeError on an invalid model."""
+    graph, extra, built = G.Graph(model), formats(model.manifest), []
+    chosen = kinds(model.manifest)
+
+    def page(path):
+        built.append(Page(path, extra))
+        return built[-1]
+
+    pages = {}
+    if "er" in chosen or "state" in chosen:
+        data = K.data_model_page(model, chosen, page(K.DATA_MODEL))
+        if data is None:
+            built.pop()
+        else:
+            pages[K.DATA_MODEL] = data
+    pages[VIEWS + "README.md"] = _index(model, digest(model), page(VIEWS + "README.md"), chosen,
+                                        K.DATA_MODEL in pages)
+    edges, uses = _component_edges(model), {}
+    for workflow in model.of_kind("workflow"):
+        for ident in _workflow_components(model, workflow):
+            uses.setdefault(ident, []).append(workflow)
+        path = VIEWS + "workflows/%s.md" % slug(workflow["id"])
+        pages[path] = _workflow_page(model, workflow, page(path), chosen)
     for component in model.of_kind("component"):
-        pages[VIEWS + "technical/%s.md" % slug(component["id"])] = _component_page(model, component, graph)
+        path = VIEWS + "technical/%s.md" % slug(component["id"])
+        pages[path] = _component_page(model, component, graph, edges, uses.get(component["id"], []), page(path),
+                                      chosen)
+    for each in built:
+        pages.update(each.files())
     return pages
+
+
+def thin(model):
+    """Short reasons for each chosen kind the model has little data for (render prints them)."""
+    return K.thin(model, kinds(model.manifest))
 
 
 def existing(model):
     return {p: d for p, d in model.raw.items() if p.startswith(VIEWS)}
+
+
+def _generated(path, data):
+    """A page Evermap wrote (it carries the marker), or a diagram file under views/diagrams/."""
+    return MARKER.encode() in data[:200] or is_diagram_file(path)
 
 
 def out_of_sync(model):
@@ -224,15 +591,17 @@ def out_of_sync(model):
         return [VIEWS + "README.md"]
     current = existing(model)
     stale = [p for p in pages if p not in current or not M.same_text(current[p], pages[p])]
-    stale += [p for p in current if p not in pages and MARKER.encode() in current[p][:200]]
+    stale += [p for p in current if p not in pages and _generated(p, current[p])]
     return sorted(stale)
 
 
 def write(root, model):
     pages = build(model)
     written = [p for p in sorted(pages) if M.write(root, p, pages[p])]
-    removed = [p for p, data in sorted(existing(model).items())
-               if p not in pages and MARKER.encode() in data[:200]]
+    removed = [p for p, data in sorted(existing(model).items()) if p not in pages and _generated(p, data)]
     for path in removed:
         M.remove(root, path)
     return {"written": written, "removed": removed, "unchanged": len(pages) - len(written)}
+
+
+from . import kinds as K  # noqa: E402  (last: kinds.py uses this module's names)

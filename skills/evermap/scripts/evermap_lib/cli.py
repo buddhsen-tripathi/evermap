@@ -206,6 +206,9 @@ def cmd_init(args, root):
                   "exclude": DEFAULT_EXCLUDE if args.exclude is None else args.exclude},
         "coverage": {"unmapped": [], "pending": [], "limitations": []},
     }
+    views = _views(None, args)
+    if views:
+        manifest["views"] = views
     if gitio.is_dirty(root):
         manifest["synced"]["dirty"] = True
         warn("the working tree has uncommitted changes outside %s/" % M.DIR)
@@ -236,6 +239,7 @@ def cmd_status(args, root):
         "unmapped_files": page(result["unmapped"], args),
         "evidence": {k: states.get(k, 0) for k in ("fresh", "moved", "stale", "missing", "unanchored")},
         "views_out_of_sync": V.out_of_sync(model),
+        "kinds_asked": V.kinds_asked(model.manifest),
     }
     plan = model.parsed.get(PLAN)
     if PLAN in model.raw:
@@ -644,7 +648,7 @@ def cmd_estimate(args, root):
     for packet in packets:
         packet["files"] = len(packet.pop("paths"))
     mode = "changed" if args.changed else "all"
-    reads = WORKER_READS[mode]
+    reads = worker_reads(mode, model.manifest)
     code = _tokens(sum(counted.values()))
     overhead = args.startup_tokens + _read_tokens(reads)
     contexts = [overhead + p["tokens"] for p in packets]
@@ -707,7 +711,7 @@ def cmd_packet(args, root):
     ids = [{"id": i, "name": e.get("name") or e.get("title")} for i, e in sorted(model.elements.items())]
     emit(args, {
         "packet": args.number, "of": len(packets), "mode": plan.get("mode"),
-        "reads": WORKER_READS.get(plan.get("mode"), WORKER_READS["all"]),
+        "reads": worker_reads(plan.get("mode"), model.manifest),
         "groups": packet.get("groups") or [],
         "scope": plan.get("scope") or {},
         "total_files": len(files), "files": page(files, args), "missing": page(missing, args),
@@ -782,13 +786,57 @@ def cmd_diff(args, root):
     return OK
 
 
+def _choice(value, allowed, flag):
+    """A comma-separated flag value as a list in the allowed order: [] for none."""
+    chosen = [part.strip().lower() for part in value.split(",") if part.strip()]
+    if chosen == ["none"]:
+        return []
+    unknown = sorted(set(chosen) - set(allowed))
+    if unknown or not chosen:
+        raise UsageError("%s takes none or a comma-separated list of: %s" % (flag, ", ".join(allowed)))
+    return [f for f in allowed if f in chosen]
+
+
+def _views(current, args):
+    """The manifest's views after --diagrams and --kinds, or None when nothing is left. Formats
+    none removes views.diagrams; kinds none stores [] ("asked, none"), unlike an absent list."""
+    views = dict(current) if isinstance(current, dict) else {}
+    if args.diagrams is not None:
+        formats = _choice(args.diagrams, V.ORDER, "--diagrams")
+        views.pop("diagrams", None)
+        if formats:
+            views["diagrams"] = formats
+    if args.kinds is not None:
+        views["kinds"] = _choice(args.kinds, V.KINDS, "--kinds")
+    return views or None
+
+
+def worker_reads(mode, manifest):
+    """The guides a worker reads: data.md too when the map draws ER or state diagrams."""
+    reads = list(WORKER_READS.get(mode, WORKER_READS["all"]))
+    if set(V.kinds(manifest)) & {"er", "state"}:
+        reads.append("data.md")
+    return reads
+
+
 def cmd_render(args, root):
     model = M.load_worktree(root)
+    if args.diagrams is not None or args.kinds is not None:
+        views = _views(model.manifest.get("views"), args)
+        manifest = {k: v for k, v in model.manifest.items() if k != "views"}
+        if views:
+            manifest["views"] = views
+        if M.write(root, M.MANIFEST, M.format_value(manifest, "manifest")):
+            model = M.load_worktree(root)
     try:
         result = V.write(root, model)
+        thin = V.thin(model)
     except (KeyError, TypeError, AttributeError, ValueError) as exc:
         warn("cannot render an invalid model (%s): run validate" % exc)
         return INVALID
+    result["diagrams"] = ["mermaid"] + V.formats(model.manifest)
+    result["kinds"] = V.kinds(model.manifest)
+    result["thin"] = thin
     emit(args, result)
     return OK
 
@@ -828,6 +876,7 @@ def build_parser():
     sub.add_argument("--name", help="system name (default: repository directory name)")
     sub.add_argument("--summary", default="", help="one or two technical sentences")
     sub.add_argument("--plain", default="", help="plain-language description")
+    _view_flags(sub)
     sub = add("status", cmd_status, "Report how fresh the model is.")
     sub.add_argument("--strict", action="store_true", help="exit 4 when the model is not up to date")
     sub = add("changes", cmd_changes, "List changed files and the elements they affect.")
@@ -874,8 +923,18 @@ def build_parser():
     sub = add("diff", cmd_diff, "Compare the model at two refs, or a ref with the working tree.")
     sub.add_argument("refs", nargs="*", metavar="ref")
     sub.add_argument("--overlay", metavar="PROPOSAL", help="compare the working tree with a proposal overlay")
-    add("render", cmd_render, "Regenerate the views.")
+    sub = add("render", cmd_render, "Regenerate the views.")
+    _view_flags(sub)
     return parser
+
+
+def _view_flags(sub):
+    sub.add_argument("--diagrams", metavar="FORMATS",
+                     help="also write diagrams as excalidraw and/or eraser files (comma-separated), or none; "
+                          "stored in the manifest (default: what it stores, Mermaid only when absent)")
+    sub.add_argument("--kinds", metavar="KINDS",
+                     help="also draw these diagram kinds: sequence, er, state, access (comma-separated), or none; "
+                          "stored in the manifest (default: what it stores, none when absent)")
 
 
 def main(argv=None):

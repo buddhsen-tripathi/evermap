@@ -15,6 +15,29 @@ Evidence: [api/routes.py:6-8](../../../api/routes.py#L6-L8)
 - Deposits
 - Collection
 
+## Neighbourhood
+
+```mermaid
+flowchart LR
+  n0["Locker API"]
+  n1["Locker database"]
+  n0 -->|"sql"| n1
+```
+
+## Operation calls
+
+No operation here calls another operation in the model.
+
+```mermaid
+flowchart LR
+  n0["Collect parcel"]
+  n1["Deposit parcel"]
+```
+
+## Workflows
+
+- [Deposit a parcel](../workflows/deposit-parcel.md)
+
 ## Operations
 
 | Operation | Trigger | Exposure | Authentication | Transactions | Idempotency | Evidence |

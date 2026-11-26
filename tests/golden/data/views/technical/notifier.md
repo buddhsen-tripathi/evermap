@@ -10,6 +10,28 @@ Worker that consumes stored-parcel events.
 
 Evidence: [worker/notify.py:4-6](../../../worker/notify.py#L4-L6)
 
+## Neighbourhood
+
+No dependency or operation call links this component to another one in the model.
+
+```mermaid
+flowchart LR
+  n0["Notifier"]
+```
+
+## Operation calls
+
+No operation here calls another operation in the model.
+
+```mermaid
+flowchart LR
+  n0["Notify recipient"]
+```
+
+## Workflows
+
+- [Deposit a parcel](../workflows/deposit-parcel.md)
+
 ## Operations
 
 | Operation | Trigger | Exposure | Authentication | Transactions | Idempotency | Evidence |

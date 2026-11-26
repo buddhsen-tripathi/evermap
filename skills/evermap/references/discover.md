@@ -6,7 +6,12 @@ Unmeasured: written before EverBench. Read only your part.
 
 1. Ask about scope only when the repository is large or holds several systems; otherwise state
    the default scope you use.
-2. `init` with `--name`, `--summary`, `--plain`, and `--scope` or `--exclude` when needed.
+2. Ask once, in one question, which diagrams they want besides the 4 flowcharts (a sequence per
+   workflow, an ER of the data, a state per status field, data access and events) and whether
+   to also write Excalidraw or Eraser files; ER and state make workers record fields, keys and
+   states too, which costs more tokens. Then `init` with `--name`, `--summary`, `--plain`,
+   `--kinds` and `--diagrams` (`none` for none), `--scope` or `--exclude` when needed. If an
+   existing map's `status` has `kinds_asked` false, ask before mapping; save with `render --kinds`.
 3. `estimate --write-plan`, approval and one worker per packet, as `headless.md` says.
 4. When `final_pass` says one worker, run the final pass last: its packet text is the block
    below, followed by the packet text in `headless.md` from "For stale evidence" to its end,

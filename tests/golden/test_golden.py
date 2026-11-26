@@ -5,6 +5,7 @@ import re
 import unittest
 
 from tests import support as S
+from evermap_lib import render
 
 DATA = os.path.join(S.GOLDEN, "data")
 UPDATE = os.environ.get("EVERMAP_UPDATE_GOLDEN") == "1"
@@ -33,6 +34,12 @@ class Golden(S.RepoCase):
         out = {"views/" + p[len(".evermap/views/"):]: d.decode("utf-8")
                for p, d in S.tree(self.root, ".evermap/views").items()}
         out["impact.json"] = S.run(self.root, "query", "impact", DEPOSIT)[1].decode("utf-8")
+        model = S.load(self.root)
+        model.manifest = dict(model.manifest, views={"diagrams": ["excalidraw", "eraser"]})
+        extra = render.build(model)
+        for name in ("technical/locker-api-1.excalidraw", "workflows/deposit-parcel-1.eraserdiagram"):
+            out["diagrams/" + name] = extra[render.DIAGRAMS + name]
+        out.update(self.kinds_outputs())
         self.edit(DEPOSIT, lambda v: [v.update(summary="Stores the parcel in a free locker."),
                                       v["auth"].update(authentication="optional")])
         self.edit(COLLECT, lambda v: v["relations"].append({"type": "reads", "target": "entity:locker"}))
@@ -44,6 +51,20 @@ class Golden(S.RepoCase):
         S.commit(self.root, "change")
         out["diff.md"] = S.run(self.root, "diff", "HEAD~1", "HEAD", "--format", "md")[1].decode("utf-8")
         return {name: normalise(text) for name, text in out.items()}
+
+    def kinds_outputs(self):
+        """Every page with all four kinds chosen on the extended model, and two of its diagram files.
+        The working tree is restored afterwards."""
+        S.extend_for_kinds(self.root)
+        model = S.load(self.root)
+        out = {"kinds/views/" + p[len(render.VIEWS):]: text for p, text in render.build(model).items()}
+        model.manifest = dict(model.manifest, views=dict(model.manifest["views"], diagrams=["excalidraw", "eraser"]))
+        extra = render.build(model)
+        for name in ("workflows/deposit-parcel-2.excalidraw", "data-model-1.eraserdiagram"):
+            out["kinds/diagrams/" + name] = extra[render.DIAGRAMS + name]
+        S.git(self.root, "checkout", "--", ".")
+        S.git(self.root, "clean", "-fdq")
+        return out
 
     def test_outputs_match_golden_files(self):
         produced = self.outputs()

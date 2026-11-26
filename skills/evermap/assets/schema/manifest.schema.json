@@ -111,6 +111,36 @@
         }
       },
       "additionalProperties": false
+    },
+    "views": {
+      "type": "object",
+      "properties": {
+        "diagrams": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "excalidraw",
+              "eraser"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "kinds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "sequence",
+              "er",
+              "state",
+              "access"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [

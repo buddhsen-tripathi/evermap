@@ -41,6 +41,9 @@ Read only the "Calling agent" part of a guide, which comes first; the rest is fo
 | know what a proposed change would affect | `references/assess.md` | `status`, `search <text> --format md`, `query impact <id> --format md`, `query shared-resources --format md` |
 | compare branches or commits | — | `diff <refA> <refB>`, `diff --overlay <proposal>` |
 | record or look up a decision | `references/decisions.md` | `search <text> --kind decision --format md`, `apply --allow-decisions` |
+| draw diagrams in Excalidraw or Eraser | `references/diagrams.md` | `render --diagrams excalidraw,eraser` |
+| choose diagrams (sequence, ER, state, data access) | `references/discover.md` step 2 | `render --kinds sequence,er,state,access\|none` |
+| (workers only) record fields, keys and states | `references/data.md` | — |
 
 Run every script as `python3 scripts/evermap.py <command>` with the path taken relative to this
 skill's directory, from anywhere inside the mapped repository (or pass `--repo <dir>`).
@@ -118,4 +121,4 @@ error, 3 not a Git repository or no model, 4 stale model with `--strict`.
 | `estimate` | Approximate tokens and worker packets; `--changed` for an update, `--write-plan` to fix the packets in `.evermap/plan.json`. |
 | `packet` | For a worker: one packet's scope, files and the ids already in the model, paged; `--unowned` lists only its files no component owns. |
 | `diff` | Model changes between refs, or against a proposal overlay. |
-| `render` | Regenerate `.evermap/views/`. |
+| `render` | Regenerate `.evermap/views/`: index, component and workflow pages with diagrams; `--diagrams excalidraw,eraser\|none` also writes those files; `--kinds` adds diagram kinds. |

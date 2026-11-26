@@ -65,6 +65,8 @@ def iter_refs(element):
             for j, move in _dicts(_dict(field.get("states")).get("transitions")):
                 add(one("%s.states.transitions[%d].via" % (where, j), move.get("via"), ("operation",)))
                 add(one("%s.states.transitions[%d].guard" % (where, j), move.get("guard"), ("rule",)))
+        for i, item in _dicts(element.get("constraints")):
+            add(one("$.constraints[%d].references" % i, item.get("references"), ("entity",)))
     elif kind == "channel":
         add(one("$.message", element.get("message"), ("entity",)))
     elif kind == "workflow":

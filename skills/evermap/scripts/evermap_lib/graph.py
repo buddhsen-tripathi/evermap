@@ -59,6 +59,8 @@ class Graph:
             return "scopes"
         if where.startswith("$.enforcement"):
             return "enforced_at"
+        if where.startswith("$.constraints"):
+            return "references"
         return "refers_to"
 
     def neighbors(self, idents, depth=1):

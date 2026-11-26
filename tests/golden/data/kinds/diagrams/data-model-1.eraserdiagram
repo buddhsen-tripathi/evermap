@@ -1,0 +1,15 @@
+entity-relationship-diagram
+title Data model: Locker database
+notation crows-foot
+Locker {
+  free boolean
+  id integer pk
+}
+Parcel {
+  id text pk
+  locker_id integer fk
+  pickup_code text
+  recipient text
+  status text
+}
+Parcel.locker_id > Locker.id

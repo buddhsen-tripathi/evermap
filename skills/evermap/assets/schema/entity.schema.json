@@ -70,6 +70,9 @@
             "type": "string",
             "pattern": "\\S"
           },
+          "references": {
+            "$ref": "common.schema.json#/$defs/ref"
+          },
           "provenance": {
             "$ref": "common.schema.json#/$defs/provenance"
           },

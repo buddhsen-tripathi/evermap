@@ -41,6 +41,12 @@ flowchart LR
   n0 -->|"sql"| n1
 ```
 
+## Workflows
+
+| Workflow | Summary |
+| --- | --- |
+| [Deposit a parcel](workflows/deposit-parcel.md) | From drop-off to notification. |
+
 ## Coverage
 
 This model is selective. Something that is not listed here may still exist in the code.

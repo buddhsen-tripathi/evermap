@@ -15,7 +15,7 @@ Unmeasured: written before EverBench. Update only when the user asks. Read only 
 4. **Baseline (U7).** If `changes` warns that the synced commit is not an ancestor of HEAD,
    tell the user the update uses the merge base and is wider.
 5. `estimate --changed --write-plan`, approval and one worker per packet, as `headless.md`
-   says.
+   says. Before it, if `kinds_asked` is false, ask about diagrams first (discover.md, step 2).
 6. **Deletions (U3).** Workers cannot delete files. For each `delete: <id>` a worker reports,
    check `query refs <id> --format md` is empty, then delete the file at the id's path under
    `.evermap/model/` (`model.md` gives the path rule). Never delete a decision: `validate`

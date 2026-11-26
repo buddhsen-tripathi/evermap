@@ -213,6 +213,54 @@ def elements():
     return {e["id"]: copy.deepcopy(e) for e in ELEMENTS}
 
 
+def kinds_elements():
+    """The fixture model extended for the chosen diagram kinds: keys and a foreign key with
+    references between the two tables, a table with no datastore, a call from the deposit to the
+    notifier, and a collection workflow with a rule-only step. Only the changed and new elements."""
+    found = elements()
+    parcel, deposit = found["entity:parcel"], found["operation:parcel.deposit"]
+    parcel["fields"][1]["nullable"] = True
+    parcel["fields"][4]["nullable"] = False
+    parcel["constraints"] = [
+        {"type": "primary-key", "fields": ["id"]},
+        {"type": "foreign-key", "fields": ["locker_id"], "references": "entity:locker#id", "provenance": "observed",
+         "evidence": ev("db/schema.sql", [8, 8], "parcels", "schema")}]
+    deposit["relations"].append({"type": "calls", "target": "operation:recipient.notify",
+                                 "mechanism": "async-via-outbox", "provenance": "observed",
+                                 "evidence": ev("api/deposit.py", [11, 11])})
+    return [parcel, deposit,
+            element("entity:outbox-row", "Outbox row", "One pending parcel event.", type="table",
+                    fields=[{"name": "id", "type": "integer"}, {"name": "event", "type": "text"}],
+                    constraints=[{"type": "primary-key", "fields": ["id"]}],
+                    evidence=ev("db/schema.sql", [14, 17], "outbox", "schema")),
+            element("role:recipient", "Recipient", "Person collecting a parcel.", plain="Someone picking up a parcel.",
+                    type="user-role", evidence=ev("api/collect.py", [10, 13], "collect_parcel")),
+            element("workflow:collect-parcel", "Collect a parcel", "From code entry to an open locker.",
+                    plain="How a recipient takes a parcel out of a locker.", actors=["role:recipient"],
+                    steps=[{"id": "s1", "plain": "Check the pickup code.", "operation": "operation:parcel.collect",
+                            "next": ["s2"]},
+                           {"id": "s2", "plain": "Check the parcel is not too old.",
+                            "rules": ["rule:collection.window"],
+                            "branches": [{"condition_plain": "Within seven days", "outcome": "o-collected"},
+                                         {"condition_plain": "After seven days", "outcome": "o-expired"}]}],
+                    outcomes=[{"id": "o-collected", "type": "success", "plain": "The parcel is collected."},
+                              {"id": "o-expired", "type": "failure", "plain": "The locker stays shut."}],
+                    evidence=ev("api/collect.py", [10, 17], "collect_parcel"))]
+
+
+def extend_for_kinds(root, kinds=("sequence", "er", "state", "access"), anchor=False):
+    """Write kinds_elements() and set views.kinds in the manifest."""
+    for value in kinds_elements():
+        write_element(root, value)
+    path = os.path.join(root, *M.MANIFEST.split("/"))
+    with open(path, encoding="utf-8") as handle:
+        manifest = json.load(handle)
+    manifest["views"] = dict(manifest.get("views") or {}, kinds=list(kinds))
+    put(root, M.MANIFEST, M.format_value(manifest, "manifest"))
+    if anchor:
+        anchor_all(root)
+
+
 def write_element(root, value, path=None):
     put(root, path or M.path_for_id(value["id"]), M.format_value(value, value.get("kind")))
 

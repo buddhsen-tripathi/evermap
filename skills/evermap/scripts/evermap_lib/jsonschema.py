@@ -1,6 +1,6 @@
 """Validator for the JSON Schema subset the Evermap schemas use.
 
-Supported keywords: type, required, enum, pattern, properties, items,
+Supported keywords: type, required, enum, pattern, properties, items, uniqueItems,
 additionalProperties, and $ref (within a file or to a sibling schema file).
 Annotations are ignored. Any other keyword raises SchemaError, so a schema can
 never silently rely on something that is not checked.
@@ -16,7 +16,7 @@ SCHEMA_DIR = os.path.normpath(
 
 ANNOTATIONS = {"$schema", "$id", "$defs", "$comment", "title", "description", "definitions"}
 KEYWORDS = {
-    "type", "required", "enum", "pattern", "properties", "items", "additionalProperties", "$ref",
+    "type", "required", "enum", "pattern", "properties", "items", "uniqueItems", "additionalProperties", "$ref",
 }
 
 
@@ -154,6 +154,9 @@ def validate(value, schema, registry=None, root=None, path="$"):
     if isinstance(value, list) and "items" in schema:
         for index, item in enumerate(value):
             errors += validate(item, schema["items"], registry, root, "%s[%d]" % (path, index))
+    if isinstance(value, list) and schema.get("uniqueItems") is True:
+        if any(_equal(a, b) for i, a in enumerate(value) for b in value[i + 1:]):
+            errors.append((path, "items must be unique"))
     return errors
 
 

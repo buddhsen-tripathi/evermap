@@ -10,6 +10,15 @@ Relational store for lockers and parcels.
 
 Evidence: [db/schema.sql:1-4](../../../db/schema.sql#L1-L4)
 
+## Neighbourhood
+
+```mermaid
+flowchart LR
+  n0["Locker database"]
+  n1["Locker API"]
+  n1 -->|"sql"| n0
+```
+
 ## Data
 
 | Entity | Type | Summary | Evidence |
