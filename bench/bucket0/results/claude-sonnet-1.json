@@ -1,0 +1,94 @@
+{
+ "run": "claude-sonnet-1",
+ "agent": "claude",
+ "model": {
+  "elements": 322,
+  "by_kind": {
+   "channel": 1,
+   "component": 38,
+   "entity": 23,
+   "invariant": 11,
+   "operation": 205,
+   "role": 2,
+   "rule": 36,
+   "workflow": 6
+  },
+  "validate_errors": 0,
+  "validate_warnings": 0,
+  "v16_warnings": 0,
+  "evidence": {
+   "fresh": 1474,
+   "moved": 0,
+   "stale": 0,
+   "missing": 0,
+   "unanchored": 0
+  },
+  "unowned_files": 0,
+  "synced": true,
+  "up_to_date": true,
+  "thin": []
+ },
+ "repo_commit": "26387d87e6fa958a82a9ed75674bfcc873a562e5",
+ "skill_commit": "7bcda78a9ca8b66df15114b428ec5ae4b09463a6",
+ "started": "2026-11-26T18:41:34",
+ "finished": "2026-11-26T19:20:02",
+ "process": {
+  "workers": 14,
+  "continuations": 1,
+  "cost_usd": 9.89,
+  "input_tokens": 352,
+  "cache_read_tokens": 9498993,
+  "cache_write_tokens": 1269932,
+  "output_tokens": 385835,
+  "codex_tokens_used": 0,
+  "turns": 427,
+  "worker_seconds": 2296,
+  "failed_workers": 0,
+  "drafts_left": 0,
+  "tree_changed": 0,
+  "pending_lines": 4,
+  "estimate": {
+   "files": 176,
+   "code_tokens": 199417,
+   "workers": 12,
+   "estimated_input_tokens": 395401,
+   "expected_billed_input_tokens": {
+    "low": 3163264,
+    "high": 9885200,
+    "assumption": "workers x turns x average context, assuming 8 to 25 turns per worker and an average context of the overhead plus the packet's code. An assumption until EverBench calibrates it; most of it is cached reads, which cost less."
+   }
+  }
+ },
+ "accuracy": {
+  "endpoints": {
+   "total": 128,
+   "matched": 125,
+   "recall": 0.977,
+   "options_preflight_excluded": 7,
+   "route_files_cited": 89,
+   "route_files": 90,
+   "wrong_method_ops": 0,
+   "http_operations": 139
+  },
+  "tables": {
+   "total": 22,
+   "matched": 22,
+   "recall": 1.0,
+   "table_entities": 23
+  },
+  "columns": {
+   "total": 255,
+   "matched": 255,
+   "recall": 1.0
+  },
+  "foreign_keys": {
+   "total": 11,
+   "matched": 11,
+   "recall": 1.0
+  },
+  "infrastructure": {
+   "total": 5,
+   "mentioned": 5
+  }
+ }
+}

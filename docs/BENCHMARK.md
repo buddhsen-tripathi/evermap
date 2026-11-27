@@ -116,9 +116,10 @@ properties and no risk labels. The first is bucket0 (TypeScript on Cloudflare Wo
 and Drizzle). Its ground truth is mechanical, read from what the code declares: HTTP endpoints
 from route files, tables, columns and foreign keys from the Drizzle schema, and queues and
 Durable Objects from the Workers configuration. It measures first-map recall on those, the
-model's health (validation, V16, unowned files) and cost on a real codebase. The harness and
-ground-truth script live in that repository (`bench/evermap/`); this repository records only
-the numbers.
+model's health (validation, V16, unowned files) and cost on a real codebase. Because the
+repository is public and the commit is pinned, anyone can rerun the ground truth and a mapping
+run and check the results. The harness, the ground truth at the pinned commit and the results
+(numbers only) live in `bench/bucket0/`; worker transcripts stay local.
 
 First results (2026-11-26, one run each, 176 files and about 199K code tokens in scope):
 
@@ -560,7 +561,7 @@ Decided by the maintainer on 2026-11-25:
 - Benchmark runs never use or store any private project's source code. The fixtures are
   fictional and written for the benchmark, the booking fixture included. The one exception
   (2026-11-26) is the real-repository track (§2.3): a public, open-source repository owned by
-  the maintainer, whose harness stays in that repository.
+  the maintainer, read from its public source at a pinned commit and never copied in.
 - Published results hold numbers only: metrics, counts, tokens, durations, cost and versions.
 - Transcripts, agent outputs, diffs and excerpts stay local and untracked (`results/`,
   `bench/results/`).

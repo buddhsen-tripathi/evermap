@@ -1,0 +1,83 @@
+{
+ "run": "earlier-map",
+ "agent": null,
+ "model": {
+  "elements": 285,
+  "by_kind": {
+   "channel": 1,
+   "component": 22,
+   "entity": 22,
+   "invariant": 5,
+   "operation": 194,
+   "rule": 39,
+   "workflow": 2
+  },
+  "validate_errors": 0,
+  "validate_warnings": 25,
+  "v16_warnings": 0,
+  "evidence": {
+   "fresh": 760,
+   "moved": 0,
+   "stale": 0,
+   "missing": 0,
+   "unanchored": 0
+  },
+  "unowned_files": 115,
+  "synced": null,
+  "up_to_date": true,
+  "thin": null
+ },
+ "repo_commit": null,
+ "skill_commit": null,
+ "started": null,
+ "finished": null,
+ "process": {
+  "workers": 0,
+  "continuations": 0,
+  "cost_usd": 0,
+  "input_tokens": 0,
+  "cache_read_tokens": 0,
+  "cache_write_tokens": 0,
+  "output_tokens": 0,
+  "codex_tokens_used": 0,
+  "turns": 0,
+  "worker_seconds": 0,
+  "failed_workers": 0,
+  "drafts_left": 0,
+  "tree_changed": 0,
+  "pending_lines": null,
+  "estimate": null
+ },
+ "accuracy": {
+  "endpoints": {
+   "total": 128,
+   "matched": 124,
+   "recall": 0.969,
+   "options_preflight_excluded": 7,
+   "route_files_cited": 89,
+   "route_files": 90,
+   "wrong_method_ops": 0,
+   "http_operations": 122
+  },
+  "tables": {
+   "total": 22,
+   "matched": 22,
+   "recall": 1.0,
+   "table_entities": 22
+  },
+  "columns": {
+   "total": 255,
+   "matched": 103,
+   "recall": 0.404
+  },
+  "foreign_keys": {
+   "total": 11,
+   "matched": 0,
+   "recall": 0.0
+  },
+  "infrastructure": {
+   "total": 5,
+   "mentioned": 4
+  }
+ }
+}

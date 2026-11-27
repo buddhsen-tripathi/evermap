@@ -1,0 +1,2093 @@
+{
+ "bindings": {
+  "containers": [
+   "MediaContainer"
+  ],
+  "durable_objects": [
+   "MediaContainer",
+   "RateLimitCounter"
+  ],
+  "queues": [
+   "bucket0-background"
+  ],
+  "r2_buckets": [
+   "THUMBNAILS"
+  ]
+ },
+ "counts": {
+  "columns": 255,
+  "endpoints": 135,
+  "references": 11,
+  "route_files": 90,
+  "tables": 22
+ },
+ "endpoints": [
+  {
+   "file": "server/routes/api/agent-bucket/files/route.ts",
+   "method": "DELETE",
+   "path": "/api/agent-bucket/files"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/route.ts",
+   "method": "GET",
+   "path": "/api/agent-bucket/files"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/agent-bucket/files"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/download/route.ts",
+   "method": "GET",
+   "path": "/api/agent-bucket/files/download"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/download/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/agent-bucket/files/download"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/folder/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/agent-bucket/files/folder"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/folder/route.ts",
+   "method": "POST",
+   "path": "/api/agent-bucket/files/folder"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/list/route.ts",
+   "method": "GET",
+   "path": "/api/agent-bucket/files/list"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/move-to-drive/route.ts",
+   "method": "POST",
+   "path": "/api/agent-bucket/files/move-to-drive"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/share/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/agent-bucket/files/share"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/share/route.ts",
+   "method": "POST",
+   "path": "/api/agent-bucket/files/share"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/upload/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/agent-bucket/files/upload"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/files/upload/route.ts",
+   "method": "POST",
+   "path": "/api/agent-bucket/files/upload"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/keys/route.ts",
+   "method": "DELETE",
+   "path": "/api/agent-bucket/keys"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/keys/route.ts",
+   "method": "GET",
+   "path": "/api/agent-bucket/keys"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/keys/route.ts",
+   "method": "PATCH",
+   "path": "/api/agent-bucket/keys"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/keys/route.ts",
+   "method": "POST",
+   "path": "/api/agent-bucket/keys"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/memory/search/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/agent-bucket/memory/search"
+  },
+  {
+   "file": "server/routes/api/agent-bucket/memory/search/route.ts",
+   "method": "POST",
+   "path": "/api/agent-bucket/memory/search"
+  },
+  {
+   "file": "server/routes/api/cloud/delete/route.ts",
+   "method": "DELETE",
+   "path": "/api/cloud/delete"
+  },
+  {
+   "file": "server/routes/api/cloud/download/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/download"
+  },
+  {
+   "file": "server/routes/api/cloud/download/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/download"
+  },
+  {
+   "file": "server/routes/api/cloud/files/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/files"
+  },
+  {
+   "file": "server/routes/api/cloud/files/list/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/files/list"
+  },
+  {
+   "file": "server/routes/api/cloud/folder/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/folder"
+  },
+  {
+   "file": "server/routes/api/cloud/folder/download/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/folder/download"
+  },
+  {
+   "file": "server/routes/api/cloud/share/route.ts",
+   "method": "DELETE",
+   "path": "/api/cloud/share"
+  },
+  {
+   "file": "server/routes/api/cloud/share/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/share"
+  },
+  {
+   "file": "server/routes/api/cloud/share/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/share"
+  },
+  {
+   "file": "server/routes/api/cloud/share/add-to-drive/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/share/add-to-drive"
+  },
+  {
+   "file": "server/routes/api/cloud/share/folder/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/share/folder"
+  },
+  {
+   "file": "server/routes/api/cloud/share/folder/download/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/share/folder/download"
+  },
+  {
+   "file": "server/routes/api/cloud/share/links/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/share/links"
+  },
+  {
+   "file": "server/routes/api/cloud/share/stream/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/share/stream"
+  },
+  {
+   "file": "server/routes/api/cloud/star/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/star"
+  },
+  {
+   "file": "server/routes/api/cloud/thumbnail/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/thumbnail"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/upload"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/chunked/cleanup/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/upload/chunked/cleanup"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/chunked/cleanup/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/upload/chunked/cleanup"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/chunked/complete/route.ts",
+   "method": "DELETE",
+   "path": "/api/cloud/upload/chunked/complete"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/chunked/complete/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/upload/chunked/complete"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/chunked/init/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/upload/chunked/init"
+  },
+  {
+   "file": "server/routes/api/cloud/upload/chunked/part/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/upload/chunked/part"
+  },
+  {
+   "file": "server/routes/api/cloud/validate-upload/route.ts",
+   "method": "POST",
+   "path": "/api/cloud/validate-upload"
+  },
+  {
+   "file": "server/routes/api/cloud/view/route.ts",
+   "method": "GET",
+   "path": "/api/cloud/view"
+  },
+  {
+   "file": "server/routes/api/contact/route.ts",
+   "method": "POST",
+   "path": "/api/contact"
+  },
+  {
+   "file": "server/routes/api/feedback/route.ts",
+   "method": "GET",
+   "path": "/api/feedback"
+  },
+  {
+   "file": "server/routes/api/feedback/route.ts",
+   "method": "POST",
+   "path": "/api/feedback"
+  },
+  {
+   "file": "server/routes/api/health/route.ts",
+   "method": "DELETE",
+   "path": "/api/health"
+  },
+  {
+   "file": "server/routes/api/health/route.ts",
+   "method": "GET",
+   "path": "/api/health"
+  },
+  {
+   "file": "server/routes/api/health/route.ts",
+   "method": "POST",
+   "path": "/api/health"
+  },
+  {
+   "file": "server/routes/api/polar/checkout/route.ts",
+   "method": "POST",
+   "path": "/api/polar/checkout"
+  },
+  {
+   "file": "server/routes/api/polar/portal/route.ts",
+   "method": "GET",
+   "path": "/api/polar/portal"
+  },
+  {
+   "file": "server/routes/api/polar/sync/route.ts",
+   "method": "POST",
+   "path": "/api/polar/sync"
+  },
+  {
+   "file": "server/routes/api/polar/webhook/route.ts",
+   "method": "POST",
+   "path": "/api/polar/webhook"
+  },
+  {
+   "file": "server/routes/api/s3-api/[[...path]]/route.ts",
+   "method": "DELETE",
+   "path": "/api/s3-api/*"
+  },
+  {
+   "file": "server/routes/api/s3-api/[[...path]]/route.ts",
+   "method": "GET",
+   "path": "/api/s3-api/*"
+  },
+  {
+   "file": "server/routes/api/s3-api/[[...path]]/route.ts",
+   "method": "HEAD",
+   "path": "/api/s3-api/*"
+  },
+  {
+   "file": "server/routes/api/s3-api/[[...path]]/route.ts",
+   "method": "OPTIONS",
+   "path": "/api/s3-api/*"
+  },
+  {
+   "file": "server/routes/api/s3-api/[[...path]]/route.ts",
+   "method": "POST",
+   "path": "/api/s3-api/*"
+  },
+  {
+   "file": "server/routes/api/s3-api/[[...path]]/route.ts",
+   "method": "PUT",
+   "path": "/api/s3-api/*"
+  },
+  {
+   "file": "server/routes/api/s3-api/bucket/route.ts",
+   "method": "DELETE",
+   "path": "/api/s3-api/bucket"
+  },
+  {
+   "file": "server/routes/api/s3-api/bucket/route.ts",
+   "method": "GET",
+   "path": "/api/s3-api/bucket"
+  },
+  {
+   "file": "server/routes/api/s3-api/bucket/route.ts",
+   "method": "POST",
+   "path": "/api/s3-api/bucket"
+  },
+  {
+   "file": "server/routes/api/s3-api/credentials/route.ts",
+   "method": "DELETE",
+   "path": "/api/s3-api/credentials"
+  },
+  {
+   "file": "server/routes/api/s3-api/credentials/route.ts",
+   "method": "GET",
+   "path": "/api/s3-api/credentials"
+  },
+  {
+   "file": "server/routes/api/s3-api/credentials/route.ts",
+   "method": "POST",
+   "path": "/api/s3-api/credentials"
+  },
+  {
+   "file": "server/routes/api/s3-api/files/route.ts",
+   "method": "DELETE",
+   "path": "/api/s3-api/files"
+  },
+  {
+   "file": "server/routes/api/s3-api/files/route.ts",
+   "method": "GET",
+   "path": "/api/s3-api/files"
+  },
+  {
+   "file": "server/routes/api/s3-api/files/download/route.ts",
+   "method": "GET",
+   "path": "/api/s3-api/files/download"
+  },
+  {
+   "file": "server/routes/api/s3-api/files/upload/route.ts",
+   "method": "POST",
+   "path": "/api/s3-api/files/upload"
+  },
+  {
+   "file": "server/routes/api/s3/config/route.ts",
+   "method": "DELETE",
+   "path": "/api/s3/config"
+  },
+  {
+   "file": "server/routes/api/s3/config/route.ts",
+   "method": "GET",
+   "path": "/api/s3/config"
+  },
+  {
+   "file": "server/routes/api/s3/config/route.ts",
+   "method": "POST",
+   "path": "/api/s3/config"
+  },
+  {
+   "file": "server/routes/api/s3/config/route.ts",
+   "method": "PUT",
+   "path": "/api/s3/config"
+  },
+  {
+   "file": "server/routes/api/s3/delete/route.ts",
+   "method": "DELETE",
+   "path": "/api/s3/delete"
+  },
+  {
+   "file": "server/routes/api/s3/download/route.ts",
+   "method": "POST",
+   "path": "/api/s3/download"
+  },
+  {
+   "file": "server/routes/api/s3/files/route.ts",
+   "method": "POST",
+   "path": "/api/s3/files"
+  },
+  {
+   "file": "server/routes/api/s3/test/route.ts",
+   "method": "POST",
+   "path": "/api/s3/test"
+  },
+  {
+   "file": "server/routes/api/s3/upload/route.ts",
+   "method": "POST",
+   "path": "/api/s3/upload"
+  },
+  {
+   "file": "server/routes/api/s3/view/route.ts",
+   "method": "POST",
+   "path": "/api/s3/view"
+  },
+  {
+   "file": "server/routes/api/teams/route.ts",
+   "method": "GET",
+   "path": "/api/teams"
+  },
+  {
+   "file": "server/routes/api/teams/route.ts",
+   "method": "POST",
+   "path": "/api/teams"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/route.ts",
+   "method": "DELETE",
+   "path": "/api/teams/:teamId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/route.ts",
+   "method": "PATCH",
+   "path": "/api/teams/:teamId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/activity/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/activity"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/activity/batch/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/activity/batch"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/activity/stream/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/activity/stream"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/files"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/delete/route.ts",
+   "method": "DELETE",
+   "path": "/api/teams/:teamId/files/delete"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/download/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/files/download"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/folder/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/files/folder"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/share/route.ts",
+   "method": "DELETE",
+   "path": "/api/teams/:teamId/files/share"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/share/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/files/share"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/share/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/files/share"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/thumbnail/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/files/thumbnail"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/upload/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/files/upload"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/files/view/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/files/view"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/invitations/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/invitations"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/invitations/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/invitations"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/invitations/[invitationId]/route.ts",
+   "method": "DELETE",
+   "path": "/api/teams/:teamId/invitations/:invitationId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/invitations/[invitationId]/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/invitations/:invitationId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/invitations/[invitationId]/resend/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/invitations/:invitationId/resend"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/members/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/members"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/members/[userId]/route.ts",
+   "method": "DELETE",
+   "path": "/api/teams/:teamId/members/:userId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/members/[userId]/route.ts",
+   "method": "PATCH",
+   "path": "/api/teams/:teamId/members/:userId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/messages/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/messages"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/messages/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/messages"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/messages/stream/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/messages/stream"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/roles/route.ts",
+   "method": "GET",
+   "path": "/api/teams/:teamId/roles"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/roles/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/roles"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/roles/[roleId]/route.ts",
+   "method": "DELETE",
+   "path": "/api/teams/:teamId/roles/:roleId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/roles/[roleId]/route.ts",
+   "method": "PATCH",
+   "path": "/api/teams/:teamId/roles/:roleId"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/roles/[roleId]/assign/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/roles/:roleId/assign"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/settings/route.ts",
+   "method": "PATCH",
+   "path": "/api/teams/:teamId/settings"
+  },
+  {
+   "file": "server/routes/api/teams/[teamId]/transfer/route.ts",
+   "method": "POST",
+   "path": "/api/teams/:teamId/transfer"
+  },
+  {
+   "file": "server/routes/api/teams/invitations/accept/route.ts",
+   "method": "POST",
+   "path": "/api/teams/invitations/accept"
+  },
+  {
+   "file": "server/routes/api/teams/share/stream/route.ts",
+   "method": "GET",
+   "path": "/api/teams/share/stream"
+  },
+  {
+   "file": "server/routes/api/user/route.ts",
+   "method": "DELETE",
+   "path": "/api/user"
+  },
+  {
+   "file": "server/routes/api/user/route.ts",
+   "method": "GET",
+   "path": "/api/user"
+  },
+  {
+   "file": "server/routes/api/user/password/route.ts",
+   "method": "GET",
+   "path": "/api/user/password"
+  },
+  {
+   "file": "server/routes/api/user/password/route.ts",
+   "method": "POST",
+   "path": "/api/user/password"
+  },
+  {
+   "file": "server/routes/api/user/plan/route.ts",
+   "method": "GET",
+   "path": "/api/user/plan"
+  },
+  {
+   "file": "server/routes/api/user/sessions/route.ts",
+   "method": "DELETE",
+   "path": "/api/user/sessions"
+  },
+  {
+   "file": "server/routes/api/user/sessions/route.ts",
+   "method": "GET",
+   "path": "/api/user/sessions"
+  },
+  {
+   "file": "server/routes/api/webhooks/clerk/route.ts",
+   "method": "POST",
+   "path": "/api/webhooks/clerk"
+  },
+  {
+   "file": "server/routes/auth.md/route.ts",
+   "method": "GET",
+   "path": "/auth.md"
+  },
+  {
+   "file": "server/routes/robots.txt/route.ts",
+   "method": "GET",
+   "path": "/robots.txt"
+  },
+  {
+   "file": "server/routes/sitemap.txt/route.ts",
+   "method": "GET",
+   "path": "/sitemap.txt"
+  },
+  {
+   "file": "server/routes/sitemap.xml/route.ts",
+   "method": "GET",
+   "path": "/sitemap.xml"
+  },
+  {
+   "file": "server/routes/well-known/api-catalog/route.ts",
+   "method": "GET",
+   "path": "/well-known/api-catalog"
+  },
+  {
+   "file": "server/routes/well-known/oauth-authorization-server/route.ts",
+   "method": "GET",
+   "path": "/well-known/oauth-authorization-server"
+  },
+  {
+   "file": "server/routes/well-known/oauth-protected-resource/route.ts",
+   "method": "GET",
+   "path": "/well-known/oauth-protected-resource"
+  },
+  {
+   "file": "server/routes/well-known/openid-configuration/route.ts",
+   "method": "GET",
+   "path": "/well-known/openid-configuration"
+  }
+ ],
+ "tables": [
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "email",
+     "name": "email"
+    },
+    {
+     "column": "plan",
+     "name": "plan"
+    },
+    {
+     "column": "storage_usage",
+     "name": "storageUsage"
+    },
+    {
+     "column": "file_count",
+     "name": "fileCount"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    4,
+    12
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "users",
+   "var": "users"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "file_key",
+     "name": "fileKey"
+    },
+    {
+     "column": "file_name",
+     "name": "fileName"
+    },
+    {
+     "column": "target_type",
+     "name": "targetType"
+    },
+    {
+     "column": "access_type",
+     "name": "accessType"
+    },
+    {
+     "column": "is_active",
+     "name": "isActive"
+    },
+    {
+     "column": "access_count",
+     "name": "accessCount"
+    },
+    {
+     "column": "allow_download",
+     "name": "allowDownload"
+    },
+    {
+     "column": "allow_add_to_drive",
+     "name": "allowAddToDrive"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    14,
+    26
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "share_links",
+   "var": "shareLinks"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "file_key",
+     "name": "fileKey"
+    },
+    {
+     "column": "upload_id",
+     "name": "uploadId"
+    },
+    {
+     "column": "size",
+     "name": "size"
+    },
+    {
+     "column": "content_type",
+     "name": "contentType"
+    },
+    {
+     "column": "encrypted",
+     "name": "encrypted"
+    },
+    {
+     "column": "existing_size",
+     "name": "existingSize"
+    },
+    {
+     "column": "is_new_file",
+     "name": "isNewFile"
+    },
+    {
+     "column": "reserved_bytes",
+     "name": "reservedBytes"
+    },
+    {
+     "column": "reserved_files",
+     "name": "reservedFiles"
+    },
+    {
+     "column": "state",
+     "name": "state"
+    },
+    {
+     "column": "started_at",
+     "name": "startedAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    },
+    {
+     "column": "operation_token",
+     "name": "operationToken"
+    }
+   ],
+   "lines": [
+    34,
+    50
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "userId",
+     "table": "users"
+    }
+   ],
+   "table": "chunked_uploads",
+   "var": "chunkedUploads"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "polar_customer_id",
+     "name": "polarCustomerId"
+    },
+    {
+     "column": "product_id",
+     "name": "productId"
+    },
+    {
+     "column": "status",
+     "name": "status"
+    },
+    {
+     "column": "seat_count",
+     "name": "seatCount"
+    },
+    {
+     "column": "current_period_end",
+     "name": "currentPeriodEnd"
+    },
+    {
+     "column": "cancel_at_period_end",
+     "name": "cancelAtPeriodEnd"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    60,
+    72
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "subscriptions",
+   "var": "subscriptions"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "file_key",
+     "name": "fileKey"
+    },
+    {
+     "column": "file_name",
+     "name": "fileName"
+    },
+    {
+     "column": "folder_path",
+     "name": "folderPath"
+    },
+    {
+     "column": "file_size",
+     "name": "fileSize"
+    },
+    {
+     "column": "mime_type",
+     "name": "mimeType"
+    },
+    {
+     "column": "encrypted",
+     "name": "encrypted"
+    },
+    {
+     "column": "encryption_mode",
+     "name": "encryptionMode"
+    },
+    {
+     "column": "iv",
+     "name": "iv"
+    },
+    {
+     "column": "auth_tag",
+     "name": "authTag"
+    },
+    {
+     "column": "thumbnail_key",
+     "name": "thumbnailKey"
+    },
+    {
+     "column": "thumbnail_attempted",
+     "name": "thumbnailAttempted"
+    },
+    {
+     "column": "is_starred",
+     "name": "isStarred"
+    },
+    {
+     "column": "source_share_link_id",
+     "name": "sourceShareLinkId"
+    },
+    {
+     "column": "source_share_type",
+     "name": "sourceShareType"
+    },
+    {
+     "column": "is_agent_upload",
+     "name": "isAgentUpload"
+    },
+    {
+     "column": "uploaded_via",
+     "name": "uploadedVia"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    77,
+    98
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "cloud_files",
+   "var": "cloudFiles"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "path",
+     "name": "path"
+    },
+    {
+     "column": "parent_path",
+     "name": "parentPath"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "is_agent_upload",
+     "name": "isAgentUpload"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    119,
+    127
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "cloud_folders",
+   "var": "cloudFolders"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "provider",
+     "name": "provider"
+    },
+    {
+     "column": "bucket_name",
+     "name": "bucketName"
+    },
+    {
+     "column": "region",
+     "name": "region"
+    },
+    {
+     "column": "endpoint",
+     "name": "endpoint"
+    },
+    {
+     "column": "force_path_style",
+     "name": "forcePathStyle"
+    },
+    {
+     "column": "encrypted_access_key_id",
+     "name": "encryptedAccessKeyId"
+    },
+    {
+     "column": "encrypted_secret_access_key",
+     "name": "encryptedSecretAccessKey"
+    },
+    {
+     "column": "credentials_iv",
+     "name": "credentialsIv"
+    },
+    {
+     "column": "credentials_auth_tag",
+     "name": "credentialsAuthTag"
+    },
+    {
+     "column": "is_active",
+     "name": "isActive"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    135,
+    152
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "s3_configurations",
+   "var": "s3Configurations"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "email",
+     "name": "email"
+    },
+    {
+     "column": "type",
+     "name": "type"
+    },
+    {
+     "column": "message",
+     "name": "message"
+    },
+    {
+     "column": "context",
+     "name": "context"
+    },
+    {
+     "column": "status",
+     "name": "status"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    157,
+    166
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "feedback",
+   "var": "feedback"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "email",
+     "name": "email"
+    },
+    {
+     "column": "subject",
+     "name": "subject"
+    },
+    {
+     "column": "message",
+     "name": "message"
+    },
+    {
+     "column": "ip",
+     "name": "ip"
+    },
+    {
+     "column": "status",
+     "name": "status"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    173,
+    182
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "contact_messages",
+   "var": "contactMessages"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "uploaded_by",
+     "name": "uploadedBy"
+    },
+    {
+     "column": "file_key",
+     "name": "fileKey"
+    },
+    {
+     "column": "file_name",
+     "name": "fileName"
+    },
+    {
+     "column": "file_size",
+     "name": "fileSize"
+    },
+    {
+     "column": "mime_type",
+     "name": "mimeType"
+    },
+    {
+     "column": "encrypted",
+     "name": "encrypted"
+    },
+    {
+     "column": "encryption_mode",
+     "name": "encryptionMode"
+    },
+    {
+     "column": "iv",
+     "name": "iv"
+    },
+    {
+     "column": "auth_tag",
+     "name": "authTag"
+    },
+    {
+     "column": "thumbnail_key",
+     "name": "thumbnailKey"
+    },
+    {
+     "column": "thumbnail_attempted",
+     "name": "thumbnailAttempted"
+    },
+    {
+     "column": "is_starred",
+     "name": "isStarred"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    189,
+    206
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    }
+   ],
+   "table": "team_files",
+   "var": "teamFiles"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "created_by",
+     "name": "createdBy"
+    },
+    {
+     "column": "file_key",
+     "name": "fileKey"
+    },
+    {
+     "column": "file_name",
+     "name": "fileName"
+    },
+    {
+     "column": "access_type",
+     "name": "accessType"
+    },
+    {
+     "column": "is_active",
+     "name": "isActive"
+    },
+    {
+     "column": "access_count",
+     "name": "accessCount"
+    },
+    {
+     "column": "allow_download",
+     "name": "allowDownload"
+    },
+    {
+     "column": "allow_add_to_drive",
+     "name": "allowAddToDrive"
+    },
+    {
+     "column": "expires_at",
+     "name": "expiresAt"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    217,
+    230
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    }
+   ],
+   "table": "team_share_links",
+   "var": "teamShareLinks"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "slug",
+     "name": "slug"
+    },
+    {
+     "column": "owner_id",
+     "name": "ownerId"
+    },
+    {
+     "column": "storage_usage",
+     "name": "storageUsage"
+    },
+    {
+     "column": "file_count",
+     "name": "fileCount"
+    },
+    {
+     "column": "member_count",
+     "name": "memberCount"
+    },
+    {
+     "column": "polar_subscription_id",
+     "name": "polarSubscriptionId"
+    },
+    {
+     "column": "polar_customer_id",
+     "name": "polarCustomerId"
+    },
+    {
+     "column": "settings",
+     "name": "settings"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    240,
+    253
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "teams",
+   "var": "teams"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "description",
+     "name": "description"
+    },
+    {
+     "column": "can_upload",
+     "name": "canUpload"
+    },
+    {
+     "column": "can_download",
+     "name": "canDownload"
+    },
+    {
+     "column": "can_delete",
+     "name": "canDelete"
+    },
+    {
+     "column": "can_share",
+     "name": "canShare"
+    },
+    {
+     "column": "can_manage_members",
+     "name": "canManageMembers"
+    },
+    {
+     "column": "can_view_activity",
+     "name": "canViewActivity"
+    },
+    {
+     "column": "can_chat",
+     "name": "canChat"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    260,
+    274
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    }
+   ],
+   "table": "team_roles",
+   "var": "teamRoles"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "role_id",
+     "name": "roleId"
+    },
+    {
+     "column": "can_upload",
+     "name": "canUpload"
+    },
+    {
+     "column": "can_download",
+     "name": "canDownload"
+    },
+    {
+     "column": "can_delete",
+     "name": "canDelete"
+    },
+    {
+     "column": "can_share",
+     "name": "canShare"
+    },
+    {
+     "column": "can_manage_members",
+     "name": "canManageMembers"
+    },
+    {
+     "column": "can_view_activity",
+     "name": "canViewActivity"
+    },
+    {
+     "column": "can_chat",
+     "name": "canChat"
+    },
+    {
+     "column": "invited_by",
+     "name": "invitedBy"
+    },
+    {
+     "column": "joined_at",
+     "name": "joinedAt"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    282,
+    298
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    },
+    {
+     "column": "id",
+     "field": "roleId",
+     "table": "team_roles"
+    }
+   ],
+   "table": "team_members",
+   "var": "teamMembers"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "email",
+     "name": "email"
+    },
+    {
+     "column": "role_id",
+     "name": "roleId"
+    },
+    {
+     "column": "invited_by",
+     "name": "invitedBy"
+    },
+    {
+     "column": "token",
+     "name": "token"
+    },
+    {
+     "column": "status",
+     "name": "status"
+    },
+    {
+     "column": "can_upload",
+     "name": "canUpload"
+    },
+    {
+     "column": "can_download",
+     "name": "canDownload"
+    },
+    {
+     "column": "can_delete",
+     "name": "canDelete"
+    },
+    {
+     "column": "can_share",
+     "name": "canShare"
+    },
+    {
+     "column": "can_manage_members",
+     "name": "canManageMembers"
+    },
+    {
+     "column": "can_view_activity",
+     "name": "canViewActivity"
+    },
+    {
+     "column": "can_chat",
+     "name": "canChat"
+    },
+    {
+     "column": "expires_at",
+     "name": "expiresAt"
+    },
+    {
+     "column": "accepted_at",
+     "name": "acceptedAt"
+    },
+    {
+     "column": "resend_count",
+     "name": "resendCount"
+    },
+    {
+     "column": "last_resent_at",
+     "name": "lastResentAt"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    307,
+    328
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    },
+    {
+     "column": "id",
+     "field": "roleId",
+     "table": "team_roles"
+    }
+   ],
+   "table": "team_invitations",
+   "var": "teamInvitations"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "action",
+     "name": "action"
+    },
+    {
+     "column": "resource_type",
+     "name": "resourceType"
+    },
+    {
+     "column": "resource_id",
+     "name": "resourceId"
+    },
+    {
+     "column": "description",
+     "name": "description"
+    },
+    {
+     "column": "metadata",
+     "name": "metadata"
+    },
+    {
+     "column": "ip_address",
+     "name": "ipAddress"
+    },
+    {
+     "column": "user_agent",
+     "name": "userAgent"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    336,
+    348
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    }
+   ],
+   "table": "activity_logs",
+   "var": "activityLogs"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "team_id",
+     "name": "teamId"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "content",
+     "name": "content"
+    },
+    {
+     "column": "type",
+     "name": "type"
+    },
+    {
+     "column": "file_id",
+     "name": "fileId"
+    },
+    {
+     "column": "parent_id",
+     "name": "parentId"
+    },
+    {
+     "column": "is_edited",
+     "name": "isEdited"
+    },
+    {
+     "column": "edited_at",
+     "name": "editedAt"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "deleted_at",
+     "name": "deletedAt"
+    }
+   ],
+   "lines": [
+    358,
+    370
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "teamId",
+     "table": "teams"
+    }
+   ],
+   "table": "team_messages",
+   "var": "teamMessages"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "access_key_id",
+     "name": "accessKeyId"
+    },
+    {
+     "column": "encrypted_secret_key",
+     "name": "encryptedSecretKey"
+    },
+    {
+     "column": "secret_key_iv",
+     "name": "secretKeyIv"
+    },
+    {
+     "column": "secret_key_auth_tag",
+     "name": "secretKeyAuthTag"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "last_used_at",
+     "name": "lastUsedAt"
+    },
+    {
+     "column": "is_active",
+     "name": "isActive"
+    },
+    {
+     "column": "expires_at",
+     "name": "expiresAt"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    381,
+    394
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "s3_api_credentials",
+   "var": "s3ApiCredentials"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "bucket_name",
+     "name": "bucketName"
+    },
+    {
+     "column": "storage_used",
+     "name": "storageUsed"
+    },
+    {
+     "column": "object_count",
+     "name": "objectCount"
+    },
+    {
+     "column": "is_active",
+     "name": "isActive"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    },
+    {
+     "column": "updated_at",
+     "name": "updatedAt"
+    }
+   ],
+   "lines": [
+    404,
+    413
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "s3_api_buckets",
+   "var": "s3ApiBuckets"
+  },
+  {
+   "columns": [
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "bucket_name",
+     "name": "bucketName"
+    },
+    {
+     "column": "object_key",
+     "name": "objectKey"
+    },
+    {
+     "column": "token",
+     "name": "token"
+    },
+    {
+     "column": "expires_at",
+     "name": "expiresAt"
+    }
+   ],
+   "lines": [
+    422,
+    428
+   ],
+   "primary_key": [],
+   "references": [],
+   "table": "s3_object_leases",
+   "var": "s3ObjectLeases"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "name",
+     "name": "name"
+    },
+    {
+     "column": "key_prefix",
+     "name": "keyPrefix"
+    },
+    {
+     "column": "key_hash",
+     "name": "keyHash"
+    },
+    {
+     "column": "destination",
+     "name": "destination"
+    },
+    {
+     "column": "destination_folder",
+     "name": "destinationFolder"
+    },
+    {
+     "column": "last_used_at",
+     "name": "lastUsedAt"
+    },
+    {
+     "column": "is_active",
+     "name": "isActive"
+    },
+    {
+     "column": "expires_at",
+     "name": "expiresAt"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    434,
+    446
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [],
+   "table": "agent_api_keys",
+   "var": "agentApiKeys"
+  },
+  {
+   "columns": [
+    {
+     "column": "id",
+     "name": "id"
+    },
+    {
+     "column": "user_id",
+     "name": "userId"
+    },
+    {
+     "column": "file_id",
+     "name": "fileId"
+    },
+    {
+     "column": "key_id",
+     "name": "keyId"
+    },
+    {
+     "column": "chunk_index",
+     "name": "chunkIndex"
+    },
+    {
+     "column": "content",
+     "name": "content"
+    },
+    {
+     "column": "content_iv",
+     "name": "contentIv"
+    },
+    {
+     "column": "content_auth_tag",
+     "name": "contentAuthTag"
+    },
+    {
+     "column": "embedding",
+     "name": "embedding"
+    },
+    {
+     "column": "token_count",
+     "name": "tokenCount"
+    },
+    {
+     "column": "created_at",
+     "name": "createdAt"
+    }
+   ],
+   "lines": [
+    463,
+    475
+   ],
+   "primary_key": [
+    "id"
+   ],
+   "references": [
+    {
+     "column": "id",
+     "field": "fileId",
+     "table": "cloud_files"
+    }
+   ],
+   "table": "memory_chunks",
+   "var": "memoryChunks"
+  }
+ ]
+}

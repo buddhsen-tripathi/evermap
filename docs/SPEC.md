@@ -827,7 +827,8 @@ evermap/
 │   ├── fixtures/booking/           # agent-visible app source as base snapshot + ordered patch series
 │   ├── scenarios/                  # agent-visible task prompts and setup recipes
 │   ├── oracle/                     # EVALUATOR-ONLY: ground truth, risk labels, hidden tests, expected changes
-│   └── harness/                    # sandbox builder, agent adapters, matcher, graders, reports
+│   ├── harness/                    # sandbox builder, agent adapters, matcher, graders, reports
+│   └── bucket0/                    # real-repository track: harness, ground truth, results (BENCHMARK §2.3)
 ├── docs/
 │   ├── SPEC.md MODEL.md PRIOR_ART.md BENCHMARK.md ROADMAP.md
 │   └── decisions/                  # this project's own decision records (dogfooding later)

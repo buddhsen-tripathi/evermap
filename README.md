@@ -112,7 +112,10 @@ stated by a person or unknown.
 | `reconcile`, `migrate`, `regenerate` | Not available yet |
 
 The [EverBench](docs/BENCHMARK.md) benchmark that will measure the guides is designed but not
-built. Nothing here is a claim about accuracy yet.
+built. A first real-repository check maps the public
+[bucket0](https://github.com/buddhsen-tripathi/bucket0) at a pinned commit, so anyone can
+rerun it: see [bench/bucket0](bench/bucket0/README.md). One run per agent is not yet
+a claim about accuracy.
 
 ## Documentation
 
