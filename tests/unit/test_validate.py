@@ -225,7 +225,7 @@ WARNINGS = [
     ("call against a dependency", "V16", lambda c: [depend(c, API, NOTIFIER), call(c, NOTIFY, DEPOSIT, "sync-call")], False),
     ("call without a mechanism against a dependency", "V16",
      lambda c: [depend(c, API, NOTIFIER), call(c, NOTIFY, DEPOSIT, None)], False),
-    ("in-process call across technologies", "V16", lambda c: [
+    ("in-process call across languages", "V16", lambda c: [
         c.edit(NOTIFIER, put(technology="go")), call(c, NOTIFY, DEPOSIT, "in-process")], False),
     ("mutual dependency", "V16", lambda c: [depend(c, API, NOTIFIER), depend(c, NOTIFIER, API)], False),
 ]
@@ -262,14 +262,34 @@ class RelationDirection(S.RepoCase):
         call(self, NOTIFY, DEPOSIT, "in-process")
         self.assertEqual([f["message"].split(" ")[1] for f in self.v16()[1]], ["calls"])  # only the reversed one
 
-    def test_technology_compares_only_the_first_word(self):
-        self.edit(API, put(technology="swift"))
-        self.edit(NOTIFIER, put(technology="Swift package (macOS 15)"))
+    def in_process(self, caller, callee):
+        self.edit(NOTIFIER, put(technology=caller))
+        self.edit(API, put(technology=callee))
         call(self, NOTIFY, DEPOSIT, "in-process")
-        self.assertEqual(self.v16()[1], [])
+        return self.v16()[1]
+
+    def test_one_language_family_is_clean(self):
+        for caller, callee in (("hono route modules", "typescript"), ("typescript, hono", "typescript"),
+                               ("Swift package (macOS 15)", "swift"), ("cloudflare durable objects", "python")):
+            with self.subTest(caller=caller, callee=callee):
+                self.assertEqual(self.in_process(caller, callee), [])
+
+    def test_different_languages_warn(self):
+        for caller, callee in (("go", "python"), ("kotlin", "swift")):
+            with self.subTest(caller=caller, callee=callee):
+                hits = self.in_process(caller, callee)
+                self.assertTrue(hits)  # one per in-process call added so far
+                for hit in hits:
+                    self.assertIn("languages differ", hit["message"])
+
+    def test_languages_reads_every_word(self):
         from evermap_lib import rules
-        self.assertEqual([rules._technology(t) for t in ("C++ (17)", "C#", "F#,", "Python 3.9", "", None)],
-                         ["c++", "c#", "f#", "python", "", ""])
+        cases = {"C++ (17)": {"cpp"}, "C#": {"dotnet"}, "F#,": {"dotnet"}, "Python 3.9": {"python"},
+                 "typescript, hono on bun": {"js"}, "Kotlin and Swift": {"jvm", "swift"},
+                 "C (99)": set(), "postgres": set(), "": set(), None: set()}
+        for value, expected in cases.items():
+            with self.subTest(value=value):
+                self.assertEqual(rules._languages(value), expected)
 
     def test_calls_inside_one_component_are_clean(self):
         self.edit(API, put(technology="python"))

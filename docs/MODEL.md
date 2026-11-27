@@ -539,7 +539,7 @@ proposals/allow-partial-refunds/
 | V13 | Files are canonically formatted (`fmt --check`). | error in `--strict` |
 | V14 | No Git conflict markers anywhere under `.evermap/`. | error |
 | V15 | `views/` is in sync with the model: the render hash recorded in `views/README.md` matches. | warning |
-| V16 | Relation direction (proposed, SPEC D18): a cross-component `calls` with mechanism `in-process`, `sync-call` or none goes to a component that itself `depends_on` the caller's component; such an in-process call joins components whose `technology` differs; or two components `depends_on` each other. The message names both ids and what to check (the call site in the caller, the mechanism, data received rather than called). | warning |
+| V16 | Relation direction (proposed, SPEC D18): a cross-component `calls` with mechanism `in-process`, `sync-call` or none goes to a component that itself `depends_on` the caller's component; such an in-process call joins components whose `technology` names different languages (frameworks and runtimes of one language, such as `hono` and `typescript`, count as one; unknown words count for nothing); or two components `depends_on` each other. The message names both ids and what to check (the call site in the caller, the mechanism, data received rather than called). | warning |
 
 The validator prints a JSON report to stdout and exits non-zero on any error.
 

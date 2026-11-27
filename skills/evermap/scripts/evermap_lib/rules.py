@@ -389,14 +389,32 @@ def _relations(element):
     return [(i, r) for i, r in enumerate(_list(element.get("relations"))) if isinstance(r, dict)]
 
 
-def _technology(value):
-    """First word of a free-text technology, lowercased, keeping only letters, digits, + and #."""
-    words = str(value or "").lower().split()
-    return re.sub(r"[^0-9a-z+#]", "", words[0]) if words else ""
+LANGUAGE_FAMILIES = {
+    "js": ("typescript", "javascript", "ts", "js", "node", "nodejs", "bun", "deno", "hono", "express", "nestjs",
+           "next", "nextjs", "react", "vue", "svelte", "angular", "vite", "remix", "astro"),
+    "python": ("python", "django", "flask", "fastapi"),
+    "jvm": ("java", "kotlin", "scala", "spring"),
+    "swift": ("swift", "swiftui"),
+    "go": ("go", "golang"),
+    "rust": ("rust",),
+    "ruby": ("ruby", "rails"),
+    "php": ("php", "laravel"),
+    "dotnet": ("c#", "f#", "dotnet"),
+    "cpp": ("c++", "cpp"),
+    "dart": ("dart", "flutter"),
+    "elixir": ("elixir", "phoenix"),
+}
+LANGUAGE_OF = {name: family for family, names in LANGUAGE_FAMILIES.items() for name in names}
+
+
+def _languages(value):
+    """Language families named anywhere in a free-text technology; unknown words count for nothing."""
+    tokens = re.split(r"[^0-9a-z+#]+", str(value or "").lower())
+    return {LANGUAGE_OF[t] for t in tokens if t in LANGUAGE_OF}
 
 
 def _v16(report, model):
-    """Relation direction: calls against a dependency, in-process calls across technologies, mutual dependencies."""
+    """Relation direction: calls against a dependency, in-process calls across languages, mutual dependencies."""
     components = {i: e for i, e in model.elements.items() if e.get("kind") == "component"}
     depends = {(i, r.get("target")) for i, c in components.items() for _, r in _relations(c)
                if r.get("type") == "depends_on" and isinstance(r.get("target"), str)}
@@ -421,9 +439,9 @@ def _v16(report, model):
                 report.warn("V16", model.paths[ident], "%s calls %s, but %s depends on %s: check the cited line is "
                             "the call site in the caller; a client calls the server, not the reverse"
                             % (ident, target["id"], dest, source), where, ident)
-            tech = [_technology(components[c].get("technology")) for c in (source, dest)]
-            if all(tech) and tech[0] != tech[1]:
-                report.warn("V16", model.paths[ident], "in-process call from %s (%s) to %s (%s), whose technologies "
+            langs = [_languages(components[c].get("technology")) for c in (source, dest)]
+            if all(langs) and not langs[0] & langs[1]:
+                report.warn("V16", model.paths[ident], "in-process call from %s (%s) to %s (%s), whose languages "
                             "differ: check the mechanism, the direction and that it is a call, not data received"
                             % (ident, source, target["id"], dest), where, ident)
 
