@@ -109,6 +109,27 @@ inventory and fulfilment service. It is built with the same planted-property *ca
 **kept private** (§8.2). It measures generalisation and guards against the skill being tuned to
 the booking fixture.
 
+### 2.3 Real-repository track (proposed, 2026-11-26)
+
+A public, open-source application owned by the maintainer, mapped as it is: no planted
+properties and no risk labels. The first is bucket0 (TypeScript on Cloudflare Workers, Hono
+and Drizzle). Its ground truth is mechanical, read from what the code declares: HTTP endpoints
+from route files, tables, columns and foreign keys from the Drizzle schema, and queues and
+Durable Objects from the Workers configuration. It measures first-map recall on those, the
+model's health (validation, V16, unowned files) and cost on a real codebase. The harness and
+ground-truth script live in that repository (`bench/evermap/`); this repository records only
+the numbers.
+
+First results (2026-11-26, one run each, 176 files and about 199K code tokens in scope):
+
+| Run | Cost | Endpoints | Tables | Columns | Foreign keys | Warnings | Unowned files |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Claude Code, Sonnet, 14 workers | $9.89, 38 min | 125/128 | 22/22 | 255/255 | 11/11 | 0 | 0 |
+| Codex, 13 workers | 1.38M tokens, 94 min | 128/128 | 22/22 | 255/255 | 11/11 | 0 | 0 |
+
+The first Claude run raised 93 V16 warnings, all false (frameworks of one language compared as
+different technologies); V16 now compares language families.
+
 ## 3. Ground truth
 
 ### 3.1 Contents (all evaluator-only, in `bench/oracle/`)
@@ -536,8 +557,10 @@ published (§8.7).
 
 Decided by the maintainer on 2026-11-25:
 
-- Benchmark runs never use or store any real project's source code. The fixtures are fictional
-  and written for the benchmark, the booking fixture included.
+- Benchmark runs never use or store any private project's source code. The fixtures are
+  fictional and written for the benchmark, the booking fixture included. The one exception
+  (2026-11-26) is the real-repository track (§2.3): a public, open-source repository owned by
+  the maintainer, whose harness stays in that repository.
 - Published results hold numbers only: metrics, counts, tokens, durations, cost and versions.
 - Transcripts, agent outputs, diffs and excerpts stay local and untracked (`results/`,
   `bench/results/`).
